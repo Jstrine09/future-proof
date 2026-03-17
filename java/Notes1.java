@@ -293,7 +293,7 @@ public class Notes1 {
     private static boolean editNote(Path notesDir, String filename) {
         // Find the notes subdirectory
         Path notesSubdir = notesDir.resolve("notes");
-        Path searchDir = Files.exists(notesDir) ? notesSubdir : notesDir;
+        Path searchDir = Files.exists(notesSubdir) ? notesSubdir : notesDir;
 
         //Build the full path to the note
         Path notePath = searchDir.resolve(filename);
@@ -334,6 +334,32 @@ public class Notes1 {
             break;
         }
         content.append(line).append("\n");
+    }
+
+    // Build updated file with preserved created and new modified timestamp
+    String modifiedTimestamp = java.time.Instant.now().toString();
+    StringBuilder fileContent = new StringBuilder();
+    fileContent.append("---\n");
+    fileContent.append("title: ").append(title).append("\n");
+    fileContent.append("created: ").append(created).append("\n");
+    fileContent.append("modified: ").append(modifiedTimestamp).append("\n");
+    if (!newTags.isEmpty()) {
+        fileContent.append("tags: [").append(newTags).append("]\n");
+    }
+    if (!author.isEmpty()) {
+        fileContent.append("author: ").append(author).append("\n");
+    }
+    fileContent.append("---\n\n");
+    fileContent.append(content);
+
+    // Write back to the same file
+    try {
+        Files.writeString(notePath, fileContent.toString());
+        System.out.println("Note updated: " + filename);
+        return true;
+    } catch (IOException e) {
+        System.err.println("Error saving note: " + e.getMessage());
+        return false;
     }
     }
     /**
@@ -415,6 +441,15 @@ public class Notes1 {
             case "create":
                 boolean createSuccess = createNote(notesDir);
                 finish(createSuccess ? 0 : 1);
+                break;
+            case "edit":
+                    if (args.length < 2) {
+                        System.err.println("Error: Please specify a filename.");
+                        System.err.println("Usage: java Notes1 edit <filename>");
+                        finish(1);
+                }
+                boolean editSuccess = editNote(notesDir, args[1]);
+                finish(editSuccess ? 0 : 1);
                 break;
         default:
             System.err.println("Error: Unknown command '" + command + "'");
