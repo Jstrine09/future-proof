@@ -145,6 +145,35 @@ public class Notes1 {
     }
 
     /**
+ * Read and display the full contents of a note file.
+ */
+    private static boolean readNote(Path notesDir, String filename) {
+        // Find the notes subdirectory
+        Path notesSubdir = notesDir.resolve("notes");
+        Path searchDir = Files.exists(notesSubdir) ? notesSubdir : notesDir;
+
+        // Build the full path to the note
+        Path notePath = searchDir.resolve(filename);
+
+        // Check if the file exists
+        if (!Files.exists(notePath)) {
+            System.err.println("Error: Note not found: " + filename);
+            return false;
+        }
+
+        // Read and print the file contents
+        try {
+            String content = Files.readString(notePath);
+            System.out.println("=".repeat(60));
+            System.out.println(content);
+            System.out.println("=".repeat(60));
+            return true;
+        } catch (IOException e) {
+            System.err.println("Error reading note: " + e.getMessage());
+            return false;
+        }
+    }
+    /**
      * Display help information.
      */
     private static void showHelp() {
@@ -154,13 +183,13 @@ public class Notes1 {
                 Usage: java Notes1 [command]
 
                 Available commands:
-                  help    - Display this help information
-                  list    - List all notes in the notes directory
+                help    - Display this help information
+                list    - List all notes in the notes directory
 
                 Notes directory: %s
 
                 Setup:
-                  To test the 'list' command, copy sample notes:
+                To test the 'list' command, copy sample notes:
                     mkdir -p ~/.notes/notes
                     cp test-notes/*.md ~/.notes/notes/
                 """, NOTES_DIR);
@@ -202,10 +231,19 @@ public class Notes1 {
                 boolean success = listNotes(notesDir);
                 finish(success ? 0 : 1);
                 break;
-            default:
-                System.err.println("Error: Unknown command '" + command + "'");
-                System.err.println("Try 'java Notes1 help' for more information.");
+            case "read":
+                if (args.length < 2) {
+                System.err.println("Error: Please specify a filename.");
+                System.err.println("Usage: java Notes1 read <filename>");
                 finish(1);
+    }
+            boolean readSuccess = readNote(notesDir, args[1]);
+            finish(readSuccess ? 0 : 1);
+            break;
+        default:
+            System.err.println("Error: Unknown command '" + command + "'");
+            System.err.println("Try 'java Notes1 help' for more information.");
+            finish(1);
         }
     }
 }
