@@ -297,6 +297,44 @@ public class Notes1 {
 
         //Build the full path to the note
         Path notePath = searchDir.resolve(filename);
+
+        //Check if the file exists
+    if (!Files.exists(notePath)) {
+        System.err.println("Error: Note not found: " + filename);
+        return false;
+    }
+
+    // Load existing metadata so we can preserve it
+    Map<String, String> metadata = parseYamlHeader(notePath);
+    String title = metadata.getOrDefault("title", filename);
+    String created = metadata.getOrDefault("created", java.time.Instant.now().toString());
+    String tags = metadata.getOrDefault("tags", "");
+    String author = metadata.getOrDefault("author", "");
+
+    // Show current content to the user
+    System.out.println("Editing: " + title);
+    System.out.println("Current tags: " + (tags.isEmpty() ? "(none)" : tags));
+    System.out.println();
+
+    Scanner scanner = new Scanner(System.in);
+
+    // Let user update tags (optional)
+    System.out.print("Enter new tags (or press Enter to keep current): ");
+    String newTags = scanner.nextLine().trim();
+    if (newTags.isEmpty()) {
+        newTags = tags;
+    }
+
+    // Get new content
+    System.out.println("Enter new content (type END on a new line when done):");
+    StringBuilder content = new StringBuilder();
+    while (scanner.hasNextLine()) {
+        String line = scanner.nextLine();
+        if (line.equals("END")) {
+            break;
+        }
+        content.append(line).append("\n");
+    }
     }
     /**
      * Display help information.
