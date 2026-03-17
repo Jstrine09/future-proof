@@ -211,6 +211,82 @@ public class Notes1 {
             return true;
         }
     }
+
+    /**
+     * Generate a safe filename from a note title and current timestamp.
+     */
+    private static String generateFilename(String title) {
+        String safe = title.toLowerCase()
+            .replaceAll("[^a-z0-9\\s-]", "")
+            .replaceAll("\\s+", "-")
+            .replaceAll("-+", "-")
+            .trim();
+        // Add timestamp for uniqueness
+        String timestamp = java.time.LocalDateTime.now()
+            .format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
+
+        return safe + "-" + timestamp + ".md";
+    }
+
+    /**
+     * Create a new note interactively and save it to the notes directory.
+     */
+    private static boolean createNote(Path notesDir) {
+        // Find the notes subdirectory
+        Path notesSubdir = notesDir.resolve("notes");
+        Path saveDir = Files.exists(notesSubdir) ? notesSubdir : notesDir;
+
+        Scanner scanner = new Scanner(System.in);
+        
+        //Get title from user
+        System.out.println("Enter note title: ");
+        String title = scanner.nextLine().trim();
+
+        if (title.isEmpty()) {
+            System.err.println("Error: Title cannot be empty.");
+            return false;
+        }
+
+        // Get tags from user (optional)
+        System.out.print("Enter tags (comma-separated, or press Enter to skip): ");
+        String tagsInput = scanner.nextLine().trim();
+
+        // Get content from user
+        System.out.println("Enter note content (type END on a new line when done):");
+        StringBuilder content = new StringBuilder();
+        while (scanner.hasNextLine()) {
+            String line =scanner.nextLine();
+            if (line.equals("END")) {
+                break;
+            }
+            content.append(line).append("\n");
+        }
+        String timestamp = java.time.Instant.now().toString();
+        StringBuilder fileContent = new StringBuilder();
+        fileContent.append("---\n");
+        fileContent.append("title: ").append(title).append("\n");
+        fileContent.append("created: ").append(timestamp).append("\n");
+        fileContent.append("modified: ").append(timestamp).append("\n");
+        if (!tagsInput.isEmpty()) {
+            fileContent.append("tags: [").append(tagsInput).append("]\n");
+        }
+        fileContent.append("---\n\n");
+        fileContent.append(content);
+
+        //Generate filename and save
+        String filename = generateFilename(title);
+        Path notePath = saveDir.resolve(filename);
+
+        try {
+            Files.writeString(notePath, fileContent.toString());
+            System.out.println("Note created: " + filename);
+            return true;
+        } catch (IOException e) {
+            System.err.println("Error saving note: " + e.getMessage());
+            return false;
+        }
+    }
+
     /**
      * Display help information.
      */
@@ -286,6 +362,10 @@ public class Notes1 {
                 }
                 boolean deleteSuccess = deleteNote(notesDir, args[1]);
                 finish(deleteSuccess ? 0 : 1);
+                break;
+            case "create":
+                boolean createSuccess = createNote(notesDir);
+                finish(createSuccess ? 0 : 1);
                 break;
         default:
             System.err.println("Error: Unknown command '" + command + "'");
