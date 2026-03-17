@@ -36,8 +36,8 @@ public class NotesShell {
         String helpText = """
 
                 Available commands:
-                  help    - Display this help information
-                  quit    - Exit the application
+                help    - Display this help information
+                quit    - Exit the application
                 """;
         System.out.println(helpText);
     }

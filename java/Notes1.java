@@ -4,6 +4,7 @@ import java.nio.file.Path;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
+import java.util.Scanner;
 import java.util.stream.Stream;
 
 /**
@@ -173,6 +174,43 @@ public class Notes1 {
             return false;
         }
     }
+
+    /**
+     *  Delete a note file after confirmation
+     */
+    private static boolean deleteNote(Path notesDir, String filename) {
+        // Find the notes Subdirectory
+        Path notesSubdir = notesDir.resolve("notes");
+        Path searchDir = Files.exists(notesSubdir) ? notesSubdir : notesDir;
+
+        //Build the full path to the note
+        Path notePath = searchDir.resolve(filename);
+
+        //Check if file exists
+        if (!Files.exists(notePath)) {
+            System.err.println("Error: Note not found: " + filename);
+            return false;
+        }
+
+        //Ask for confirmation before deleting
+        System.out.println("Are you sure you want to delete '" + filename + "'? (yes/no): ");
+        Scanner scanner = new Scanner(System.in);
+        String confirmation = scanner.nextLine().trim().toLowerCase();
+
+        if (confirmation.equals("yes")) {
+            try {
+                Files.delete(notePath);
+                System.out.println("Note deleted: " + filename);
+                return true;
+            } catch (IOException e) {
+                System.err.println("Error deleting note: " + e.getMessage());
+                return false;
+            }
+        } else {
+            System.out.println("Deletion cancelled.");
+            return true;
+        }
+    }
     /**
      * Display help information.
      */
@@ -233,13 +271,22 @@ public class Notes1 {
                 break;
             case "read":
                 if (args.length < 2) {
-                System.err.println("Error: Please specify a filename.");
-                System.err.println("Usage: java Notes1 read <filename>");
-                finish(1);
-    }
-            boolean readSuccess = readNote(notesDir, args[1]);
-            finish(readSuccess ? 0 : 1);
-            break;
+                    System.err.println("Error: Please specify a filename.");
+                    System.err.println("Usage: java Notes1 read <filename>");
+                    finish(1);
+                }
+                boolean readSuccess = readNote(notesDir, args[1]);
+                finish(readSuccess ? 0 : 1);
+                break;
+            case "delete":
+                if (args.length < 2) {
+                    System.err.println("Error: Please specify a filename.");
+                    System.err.println("Usage: java Notes1 delete <filename>");
+                    finish(1);
+                }
+                boolean deleteSuccess = deleteNote(notesDir, args[1]);
+                finish(deleteSuccess ? 0 : 1);
+                break;
         default:
             System.err.println("Error: Unknown command '" + command + "'");
             System.err.println("Try 'java Notes1 help' for more information.");
