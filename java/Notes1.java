@@ -288,6 +288,17 @@ public class Notes1 {
     }
 
     /**
+     * Edit the content of an Existing note.
+     */
+    private static boolean editNote(Path notesDir, String filename) {
+        // Find the notes subdirectory
+        Path notesSubdir = notesDir.resolve("notes");
+        Path searchDir = Files.exists(notesDir) ? notesSubdir : notesDir;
+
+        //Build the full path to the note
+        Path notePath = searchDir.resolve(filename);
+    }
+    /**
      * Display help information.
      */
     private static void showHelp() {
