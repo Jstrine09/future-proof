@@ -1,3 +1,5 @@
+package src.main.java;
+
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
@@ -453,6 +455,70 @@ public class JumzysNotes {
 }
     
     /**
+     * Run an interactive menu when no command is provided.
+     */
+    private static void runInteractiveMenu(Path notesDir) {
+        Scanner scanner = new Scanner(System.in);
+
+        System.out.println("============================");
+        System.out.println("    Welcome to JumzysNotes  ");
+        System.out.println("============================");
+
+        while (true) {
+            System.out.println();
+            System.out.println("1. List notes");
+            System.out.println("2. Read a note");
+            System.out.println("3. Create a note");
+            System.out.println("4. Edit a note");
+            System.out.println("5. Delete a note");
+            System.out.println("6. Search notes");
+            System.out.println("7. Help");
+            System.out.println("0. Quit");
+            System.out.println();
+            System.out.print("Enter your choice: ");
+
+            String choice = scanner.nextLine().trim();
+
+            switch (choice) {
+                case "1":
+                    listNotes(notesDir);
+                    break;
+                case "2":
+                    System.out.print("Enter filename: ");
+                    String readFile = scanner.nextLine().trim();
+                    readNote(notesDir, readFile);
+                    break;
+                case "3":
+                    createNote(notesDir);
+                    break;
+                case "4":
+                    System.out.print("Enter filename to edit: ");
+                    String editFile = scanner.nextLine().trim();
+                    editNote(notesDir, editFile);
+                    break;
+                case "5":
+                    System.out.print("Enter filename to delete: ");
+                    String deleteFile = scanner.nextLine().trim();
+                    deleteNote(notesDir, deleteFile);
+                    break;
+                case "6":
+                    System.out.print("Enter search keyword: ");
+                    String keyword = scanner.nextLine().trim();
+                    searchNotes(notesDir, keyword);
+                    break;
+                case "7":
+                    showHelp();
+                    break;
+                case "0":
+                    System.out.println("\nGoodbye!");
+                    return;
+                default:
+                    System.out.println("Invalid choice. Please enter a number 0-7.");
+            }
+        }
+    }
+
+    /**
      * Display help information.
      */
     private static void showHelp() {
@@ -504,11 +570,8 @@ public class JumzysNotes {
 
         // Parse command-line arguments
         if (args.length < 1) {
-            // No command provided
-            System.err.println("Error: No command provided.");
-            System.err.println("Usage: java JumzysNotes [command]");
-            System.err.println("Try 'java JumzysNotes help' for more information.");
-            finish(1);
+            runInteractiveMenu(notesDir);
+            finish(0);
         }
 
         String command = args[0].toLowerCase();
