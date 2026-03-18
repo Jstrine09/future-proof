@@ -369,7 +369,7 @@ public class JumzysNotes {
         String helpText = String.format("""
                 Future Proof Notes Manager v0.1
 
-                Usage: java Notes1 [command]
+                Usage: java JumzysNotes [command]
 
                 Available commands:
                 help    - Display this help information
