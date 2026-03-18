@@ -506,8 +506,8 @@ private static Path setup() {
         if (args.length < 1) {
             // No command provided
             System.err.println("Error: No command provided.");
-            System.err.println("Usage: java Notes1 [command]");
-            System.err.println("Try 'java Notes1 help' for more information.");
+            System.err.println("Usage: java JumzysNotes [command]");
+            System.err.println("Try 'java JumzysNotes help' for more information.");
             finish(1);
         }
 
@@ -526,7 +526,7 @@ private static Path setup() {
             case "read":
                 if (args.length < 2) {
                     System.err.println("Error: Please specify a filename.");
-                    System.err.println("Usage: java Notes1 read <filename>");
+                    System.err.println("Usage: java JumzysNotes read <filename>");
                     finish(1);
                 }
                 boolean readSuccess = readNote(notesDir, args[1]);
@@ -535,7 +535,7 @@ private static Path setup() {
             case "delete":
                 if (args.length < 2) {
                     System.err.println("Error: Please specify a filename.");
-                    System.err.println("Usage: java Notes1 delete <filename>");
+                    System.err.println("Usage: java JumzysNotes delete <filename>");
                     finish(1);
                 }
                 boolean deleteSuccess = deleteNote(notesDir, args[1]);
@@ -548,7 +548,7 @@ private static Path setup() {
             case "edit":
                     if (args.length < 2) {
                         System.err.println("Error: Please specify a filename.");
-                        System.err.println("Usage: java Notes1 edit <filename>");
+                        System.err.println("Usage: java JumzysNotes edit <filename>");
                         finish(1);
                 }
                 boolean editSuccess = editNote(notesDir, args[1]);
@@ -565,7 +565,7 @@ private static Path setup() {
                 break;
         default:
             System.err.println("Error: Unknown command '" + command + "'");
-            System.err.println("Try 'java Notes1 help' for more information.");
+            System.err.println("Try 'java JumzysNotes help' for more information.");
             finish(1);
         }
     }
