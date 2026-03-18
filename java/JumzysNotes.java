@@ -19,7 +19,7 @@ import java.util.stream.Stream;
  *     mkdir -p ~/.notes/notes
  *     cp test-notes/*.md ~/.notes/notes/
  */
-public class Notes1 {
+public class JumzysNotes {
 
     private static final Path NOTES_DIR = Path.of(System.getProperty("user.home"), ".notes");
 
