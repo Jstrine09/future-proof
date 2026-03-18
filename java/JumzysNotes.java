@@ -23,15 +23,40 @@ public class JumzysNotes {
 
     private static final Path NOTES_DIR = Path.of(System.getProperty("user.home"), ".notes");
 
+    
     /**
      * Initialize the notes application.
+     * Creates the notes directory if it doesn't exist.
      */
-    private static Path setup() {
-        // Define the notes directory in HOME
-        // Check if notes directory exists
-        // For CLI version, we don't automatically create it
-        return NOTES_DIR;
+private static Path setup() {
+    // Define the notes directory in HOME
+    Path notesDir = NOTES_DIR;
+    Path notesSubdir = notesDir.resolve("notes");
+
+    // Create ~/.notes if it doesn't exist
+    if (!Files.exists(notesDir)) {
+        try {
+            Files.createDirectories(notesDir);
+            System.out.println("Created notes directory: " + notesDir);
+        } catch (IOException e) {
+            System.err.println("Error creating notes directory: " + e.getMessage());
+            System.exit(1);
+        }
     }
+
+    // Create ~/.notes/notes if it doesn't exist
+    if (!Files.exists(notesSubdir)) {
+        try {
+            Files.createDirectories(notesSubdir);
+            System.out.println("Created notes subdirectory: " + notesSubdir);
+        } catch (IOException e) {
+            System.err.println("Error creating notes subdirectory: " + e.getMessage());
+            System.exit(1);
+        }
+    }
+
+    return notesDir;
+}
 
     /**
      * Parse YAML front matter from a note file.
