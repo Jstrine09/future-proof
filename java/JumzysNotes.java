@@ -288,10 +288,10 @@ private static Path setup() {
         }
         String timestamp = java.time.Instant.now().toString();
         StringBuilder fileContent = new StringBuilder();
-        fileContent.append("---\n");
-        fileContent.append("title: ").append(title).append("\n");
-        fileContent.append("created: ").append(timestamp).append("\n");
-        fileContent.append("modified: ").append(timestamp).append("\n");
+            fileContent.append("---\n");
+            fileContent.append("title: ").append(title).append("\n");
+            fileContent.append("created: ").append(timestamp).append("\n");
+            fileContent.append("modified: ").append(timestamp).append("\n");
         if (!tagsInput.isEmpty()) {
             fileContent.append("tags: [").append(tagsInput).append("]\n");
         }
@@ -387,6 +387,71 @@ private static Path setup() {
         return false;
     }
     }
+
+    /**
+    * Search all notes for a keyword in title, tags, or content.
+    */
+    private static boolean searchNotes(Path notesDir, String keyword) {
+    // Find the notes subdirectory
+    Path notesSubdir = notesDir.resolve("notes");
+    Path searchDir = Files.exists(notesSubdir) ? notesSubdir : notesDir;
+
+    // Check directory exists
+    if (!Files.exists(searchDir)) {
+        System.err.println("Error: Notes directory does not exist: " + searchDir);
+        return false;
+    }
+
+    // Get all note files
+    List<Path> noteFiles;
+    try (Stream<Path> paths = Files.walk(searchDir, 1)) {
+        noteFiles = paths
+                .filter(Files::isRegularFile)
+                .filter(p -> {
+                    String name = p.getFileName().toString();
+                    return name.endsWith(".md") || name.endsWith(".note") || name.endsWith(".txt");
+                })
+                .sorted()
+                .toList();
+    } catch (IOException e) {
+        System.err.println("Error reading notes directory: " + e.getMessage());
+        return false;
+    }
+
+            // Search each note
+            String lowerKeyword = keyword.toLowerCase();
+            int matchCount = 0;
+
+            System.out.println("Searching for: '" + keyword + "'");
+            System.out.println("=".repeat(60));
+
+    for (Path noteFile : noteFiles) {
+        try {
+            String content = Files.readString(noteFile);
+            Map<String, String> metadata = parseYamlHeader(noteFile);
+            String title = metadata.getOrDefault("title", noteFile.getFileName().toString());
+            String tags = metadata.getOrDefault("tags", "");
+
+            // Check if keyword appears in title, tags, or content
+            if (title.toLowerCase().contains(lowerKeyword)
+                    || tags.toLowerCase().contains(lowerKeyword)
+                    || content.toLowerCase().contains(lowerKeyword)) {
+                System.out.println("\n" + noteFile.getFileName());
+                System.out.println("  Title: " + title);
+                if (!tags.isEmpty()) {
+                    System.out.println("  Tags: " + tags);
+                }
+                matchCount++;
+            }
+        } catch (IOException e) {
+            System.err.println("Error reading file: " + noteFile.getFileName());
+        }
+    }
+
+    System.out.println("\n" + matchCount + " note(s) found matching '" + keyword + "'");
+    return true;
+}
+    
     /**
      * Display help information.
      */
@@ -403,6 +468,15 @@ private static Path setup() {
                 create      - Create a new note
                 edit <filename>     - Edit a note
                 delete <filename>       - Delete a note
+                search <keyword>        - Search notes by keyword in title, tags, or content
+
+                Examples:
+                java JumzysNotes list
+                java JumzysNotes read sample-note-1.md
+                java JumzysNotes create
+                java JumzysNotes edit sample-note-1.md
+                java JumzysNotes delete sample-note-1.md
+                java JumzysNotes search algorithms
 
                 Notes directory: %s
 
@@ -479,6 +553,15 @@ private static Path setup() {
                 }
                 boolean editSuccess = editNote(notesDir, args[1]);
                 finish(editSuccess ? 0 : 1);
+                break;
+            case "search":
+                if (args.length < 2) {
+                    System.err.println("Error: Please specify a search keyword.");
+                    System.err.println("Usage: java JumzysNotes search <keyword>");
+                    finish(1);
+                }
+                boolean searchSuccess = searchNotes(notesDir, args[1]);
+                finish(searchSuccess ? 0 : 1);
                 break;
         default:
             System.err.println("Error: Unknown command '" + command + "'");
