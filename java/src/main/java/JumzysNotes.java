@@ -7,56 +7,43 @@ import java.util.Map;
 import java.util.Scanner;
 import java.util.stream.Stream;
 
-/**
- * Future Proof Notes Manager - Version One (CLI)
- * A personal notes manager using text files with YAML headers.
- * Command-line interface version with 'list' command.
- *
- * SETUP REMINDER:
- * Before running the 'list' command, copy the test notes to your notes directory:
- *     cp -r test-notes/* ~/.notes/
- * or create the directory structure:
- *     mkdir -p ~/.notes/notes
- *     cp test-notes/*.md ~/.notes/notes/
- */
 public class JumzysNotes {
 
     private static final Path NOTES_DIR = Path.of(System.getProperty("user.home"), ".notes");
 
-    
     /**
      * Initialize the notes application.
      * Creates the notes directory if it doesn't exist.
      */
     private static Path setup() {
-    // Define the notes directory in HOME
-    Path notesDir = NOTES_DIR;
-    Path notesSubdir = notesDir.resolve("notes");
+        // Define the notes directory in HOME
+        Path notesDir = NOTES_DIR;
+        Path notesSubdir = notesDir.resolve("notes");
 
-    // Create ~/.notes if it doesn't exist
-    if (!Files.exists(notesDir)) {
-        try {
-            Files.createDirectories(notesDir);
-            System.out.println("Created notes directory: " + notesDir);
-        } catch (IOException e) {
-            System.err.println("Error creating notes directory: " + e.getMessage());
-            System.exit(1);
+        // Create ~/.notes if it doesn't exist
+        if (!Files.exists(notesDir)) {
+            try {
+                Files.createDirectories(notesDir);
+                System.out.println("Created notes directory: " + notesDir);
+            } catch (IOException e) {
+                System.err.println("Error creating notes directory: " + e.getMessage());
+                System.exit(1);
+            }
         }
-    }
 
-    // Create ~/.notes/notes if it doesn't exist
-    if (!Files.exists(notesSubdir)) {
-        try {
-            Files.createDirectories(notesSubdir);
-            System.out.println("Created notes subdirectory: " + notesSubdir);
-        } catch (IOException e) {
-            System.err.println("Error creating notes subdirectory: " + e.getMessage());
-            System.exit(1);
+        // Create ~/.notes/notes if it doesn't exist
+        if (!Files.exists(notesSubdir)) {
+            try {
+                Files.createDirectories(notesSubdir);
+                System.out.println("Created notes subdirectory: " + notesSubdir);
+            } catch (IOException e) {
+                System.err.println("Error creating notes subdirectory: " + e.getMessage());
+                System.exit(1);
+            }
         }
-    }
 
-    return notesDir;
-}
+        return notesDir;
+    }
 
     /**
      * Parse YAML front matter from a note file.
@@ -171,8 +158,8 @@ public class JumzysNotes {
     }
 
     /**
- * Read and display the full contents of a note file.
- */
+     * Read and display the full contents of a note file.
+     */
     private static boolean readNote(Path notesDir, String filename) {
         // Find the notes subdirectory
         Path notesSubdir = notesDir.resolve("notes");
@@ -201,23 +188,23 @@ public class JumzysNotes {
     }
 
     /**
-     *  Delete a note file after confirmation
+     * Delete a note file after confirmation
      */
     private static boolean deleteNote(Path notesDir, String filename) {
         // Find the notes Subdirectory
         Path notesSubdir = notesDir.resolve("notes");
         Path searchDir = Files.exists(notesSubdir) ? notesSubdir : notesDir;
 
-        //Build the full path to the note
+        // Build the full path to the note
         Path notePath = searchDir.resolve(filename);
 
-        //Check if file exists
+        // Check if file exists
         if (!Files.exists(notePath)) {
             System.err.println("Error: Note not found: " + filename);
             return false;
         }
 
-        //Ask for confirmation before deleting
+        // Ask for confirmation before deleting
         System.out.println("Are you sure you want to delete '" + filename + "'? (yes/no): ");
         Scanner scanner = new Scanner(System.in);
         String confirmation = scanner.nextLine().trim().toLowerCase();
@@ -242,13 +229,13 @@ public class JumzysNotes {
      */
     private static String generateFilename(String title) {
         String safe = title.toLowerCase()
-            .replaceAll("[^a-z0-9\\s-]", "")
-            .replaceAll("\\s+", "-")
-            .replaceAll("-+", "-")
-            .trim();
+                .replaceAll("[^a-z0-9\\s-]", "")
+                .replaceAll("\\s+", "-")
+                .replaceAll("-+", "-")
+                .trim();
         // Add timestamp for uniqueness
         String timestamp = java.time.LocalDateTime.now()
-            .format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
+                .format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
 
         return safe + "-" + timestamp + ".md";
     }
@@ -262,8 +249,8 @@ public class JumzysNotes {
         Path saveDir = Files.exists(notesSubdir) ? notesSubdir : notesDir;
 
         Scanner scanner = new Scanner(System.in);
-        
-        //Get title from user
+
+        // Get title from user
         System.out.println("Enter note title: ");
         String title = scanner.nextLine().trim();
 
@@ -280,7 +267,7 @@ public class JumzysNotes {
         System.out.println("Enter note content (type END on a new line when done):");
         StringBuilder content = new StringBuilder();
         while (scanner.hasNextLine()) {
-            String line =scanner.nextLine();
+            String line = scanner.nextLine();
             if (line.equals("END")) {
                 break;
             }
@@ -288,17 +275,17 @@ public class JumzysNotes {
         }
         String timestamp = java.time.Instant.now().toString();
         StringBuilder fileContent = new StringBuilder();
-            fileContent.append("---\n");
-            fileContent.append("title: ").append(title).append("\n");
-            fileContent.append("created: ").append(timestamp).append("\n");
-            fileContent.append("modified: ").append(timestamp).append("\n");
+        fileContent.append("---\n");
+        fileContent.append("title: ").append(title).append("\n");
+        fileContent.append("created: ").append(timestamp).append("\n");
+        fileContent.append("modified: ").append(timestamp).append("\n");
         if (!tagsInput.isEmpty()) {
             fileContent.append("tags: [").append(tagsInput).append("]\n");
         }
         fileContent.append("---\n\n");
         fileContent.append(content);
 
-        //Generate filename and save
+        // Generate filename and save
         String filename = generateFilename(title);
         Path notePath = saveDir.resolve(filename);
 
@@ -320,28 +307,35 @@ public class JumzysNotes {
         Path notesSubdir = notesDir.resolve("notes");
         Path searchDir = Files.exists(notesSubdir) ? notesSubdir : notesDir;
 
-        //Build the full path to the note
+        // Build the full path to the note
         Path notePath = searchDir.resolve(filename);
 
-        //Check if the file exists
+        // Check if the file exists
         if (!Files.exists(notePath)) {
             System.err.println("Error: Note not found: " + filename);
             return false;
         }
 
-    // Load existing metadata so we can preserve it
+        // Load existing metadata so we can preserve it
         Map<String, String> metadata = parseYamlHeader(notePath);
         String title = metadata.getOrDefault("title", filename);
         String created = metadata.getOrDefault("created", java.time.Instant.now().toString());
         String tags = metadata.getOrDefault("tags", "");
         String author = metadata.getOrDefault("author", "");
 
-    // Show current content to the user
+        // Show current content to the user
         System.out.println("Editing: " + title);
         System.out.println("Current tags: " + (tags.isEmpty() ? "(none)" : tags));
         System.out.println();
 
         Scanner scanner = new Scanner(System.in);
+
+        // Let user update title (optional)
+        System.out.print("Enter new title (or press Enter to keep current): ");
+        String newTitle = scanner.nextLine().trim();
+        if (newTitle.isEmpty()) {
+            newTitle = title;
+        }
 
         // Let user update tags (optional)
         System.out.print("Enter new tags (or press Enter to keep current): ");
@@ -350,108 +344,108 @@ public class JumzysNotes {
             newTags = tags;
         }
 
-    // Get new content
+        // Get new content
         System.out.println("Enter new content (type END on a new line when done):");
         StringBuilder content = new StringBuilder();
-    while (scanner.hasNextLine()) {
-        String line = scanner.nextLine();
-        if (line.equals("END")) {
-            break;
+        while (scanner.hasNextLine()) {
+            String line = scanner.nextLine();
+            if (line.equals("END")) {
+                break;
+            }
+            content.append(line).append("\n");
         }
-        content.append(line).append("\n");
-    }
 
-    // Build updated file with preserved created and new modified timestamp
+        // Build updated file with preserved created and new modified timestamp
         String modifiedTimestamp = java.time.Instant.now().toString();
         StringBuilder fileContent = new StringBuilder();
         fileContent.append("---\n");
-        fileContent.append("title: ").append(title).append("\n");
+        fileContent.append("title: ").append(newTitle).append("\n");
         fileContent.append("created: ").append(created).append("\n");
         fileContent.append("modified: ").append(modifiedTimestamp).append("\n");
-    if (!newTags.isEmpty()) {
-        fileContent.append("tags: [").append(newTags).append("]\n");
-    }
-    if (!author.isEmpty()) {
-        fileContent.append("author: ").append(author).append("\n");
-    }
-    fileContent.append("---\n\n");
-    fileContent.append(content);
+        if (!newTags.isEmpty()) {
+            fileContent.append("tags: [").append(newTags).append("]\n");
+        }
+        if (!author.isEmpty()) {
+            fileContent.append("author: ").append(author).append("\n");
+        }
+        fileContent.append("---\n\n");
+        fileContent.append(content);
 
-    // Write back to the same file
-    try {
-        Files.writeString(notePath, fileContent.toString());
-        System.out.println("Note updated: " + filename);
-        return true;
-    } catch (IOException e) {
-        System.err.println("Error saving note: " + e.getMessage());
-        return false;
-    }
-    }
-
-    /**
-    * Search all notes for a keyword in title, tags, or content.
-    */
-    private static boolean searchNotes(Path notesDir, String keyword) {
-    // Find the notes subdirectory
-    Path notesSubdir = notesDir.resolve("notes");
-    Path searchDir = Files.exists(notesSubdir) ? notesSubdir : notesDir;
-
-    // Check directory exists
-    if (!Files.exists(searchDir)) {
-        System.err.println("Error: Notes directory does not exist: " + searchDir);
-        return false;
-    }
-
-    // Get all note files
-    List<Path> noteFiles;
-    try (Stream<Path> paths = Files.walk(searchDir, 1)) {
-        noteFiles = paths
-                .filter(Files::isRegularFile)
-                .filter(p -> {
-                    String name = p.getFileName().toString();
-                    return name.endsWith(".md") || name.endsWith(".note") || name.endsWith(".txt");
-                })
-                .sorted()
-                .toList();
-    } catch (IOException e) {
-        System.err.println("Error reading notes directory: " + e.getMessage());
-        return false;
-    }
-
-            // Search each note
-            String lowerKeyword = keyword.toLowerCase();
-            int matchCount = 0;
-
-            System.out.println("Searching for: '" + keyword + "'");
-            System.out.println("=".repeat(60));
-
-    for (Path noteFile : noteFiles) {
+        // Write back to the same file
         try {
-            String content = Files.readString(noteFile);
-            Map<String, String> metadata = parseYamlHeader(noteFile);
-            String title = metadata.getOrDefault("title", noteFile.getFileName().toString());
-            String tags = metadata.getOrDefault("tags", "");
-
-            // Check if keyword appears in title, tags, or content
-            if (title.toLowerCase().contains(lowerKeyword)
-                    || tags.toLowerCase().contains(lowerKeyword)
-                    || content.toLowerCase().contains(lowerKeyword)) {
-                System.out.println("\n" + noteFile.getFileName());
-                System.out.println("  Title: " + title);
-                if (!tags.isEmpty()) {
-                    System.out.println("  Tags: " + tags);
-                }
-                matchCount++;
-            }
+            Files.writeString(notePath, fileContent.toString());
+            System.out.println("Note updated: " + filename);
+            return true;
         } catch (IOException e) {
-            System.err.println("Error reading file: " + noteFile.getFileName());
+            System.err.println("Error saving note: " + e.getMessage());
+            return false;
         }
     }
 
-    System.out.println("\n" + matchCount + " note(s) found matching '" + keyword + "'");
-    return true;
-}
-    
+    /**
+     * Search all notes for a keyword in title, tags, or content.
+     */
+    private static boolean searchNotes(Path notesDir, String keyword) {
+        // Find the notes subdirectory
+        Path notesSubdir = notesDir.resolve("notes");
+        Path searchDir = Files.exists(notesSubdir) ? notesSubdir : notesDir;
+
+        // Check directory exists
+        if (!Files.exists(searchDir)) {
+            System.err.println("Error: Notes directory does not exist: " + searchDir);
+            return false;
+        }
+
+        // Get all note files
+        List<Path> noteFiles;
+        try (Stream<Path> paths = Files.walk(searchDir, 1)) {
+            noteFiles = paths
+                    .filter(Files::isRegularFile)
+                    .filter(p -> {
+                        String name = p.getFileName().toString();
+                        return name.endsWith(".md") || name.endsWith(".note") || name.endsWith(".txt");
+                    })
+                    .sorted()
+                    .toList();
+        } catch (IOException e) {
+            System.err.println("Error reading notes directory: " + e.getMessage());
+            return false;
+        }
+
+        // Search each note
+        String lowerKeyword = keyword.toLowerCase();
+        int matchCount = 0;
+
+        System.out.println("Searching for: '" + keyword + "'");
+        System.out.println("=".repeat(60));
+
+        for (Path noteFile : noteFiles) {
+            try {
+                String content = Files.readString(noteFile);
+                Map<String, String> metadata = parseYamlHeader(noteFile);
+                String title = metadata.getOrDefault("title", noteFile.getFileName().toString());
+                String tags = metadata.getOrDefault("tags", "");
+
+                // Check if keyword appears in title, tags, or content
+                if (title.toLowerCase().contains(lowerKeyword)
+                        || tags.toLowerCase().contains(lowerKeyword)
+                        || content.toLowerCase().contains(lowerKeyword)) {
+                    System.out.println("\n" + noteFile.getFileName());
+                    System.out.println("  Title: " + title);
+                    if (!tags.isEmpty()) {
+                        System.out.println("  Tags: " + tags);
+                    }
+                    matchCount++;
+                }
+            } catch (IOException e) {
+                System.err.println("Error reading file: " + noteFile.getFileName());
+            }
+        }
+
+        System.out.println("\n" + matchCount + " note(s) found matching '" + keyword + "'");
+        return true;
+    }
+
     /**
      * Run an interactive menu when no command is provided.
      */
@@ -521,7 +515,7 @@ public class JumzysNotes {
      */
     private static void showHelp() {
         String helpText = String.format("""
-                Future Proof Notes Manager v0.1
+                JumzysNotes v1.0 - Personal Notes Manager
 
                 Usage: java JumzysNotes [command]
 
@@ -624,10 +618,10 @@ public class JumzysNotes {
                 boolean searchSuccess = searchNotes(notesDir, args[1]);
                 finish(searchSuccess ? 0 : 1);
                 break;
-        default:
-            System.err.println("Error: Unknown command '" + command + "'");
-            System.err.println("Try 'java JumzysNotes help' for more information.");
-            finish(1);
+            default:
+                System.err.println("Error: Unknown command '" + command + "'");
+                System.err.println("Try 'java JumzysNotes help' for more information.");
+                finish(1);
         }
     }
 }
