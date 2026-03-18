@@ -28,7 +28,7 @@ public class JumzysNotes {
      * Initialize the notes application.
      * Creates the notes directory if it doesn't exist.
      */
-private static Path setup() {
+    private static Path setup() {
     // Define the notes directory in HOME
     Path notesDir = NOTES_DIR;
     Path notesSubdir = notesDir.resolve("notes");
@@ -324,35 +324,35 @@ private static Path setup() {
         Path notePath = searchDir.resolve(filename);
 
         //Check if the file exists
-    if (!Files.exists(notePath)) {
-        System.err.println("Error: Note not found: " + filename);
-        return false;
-    }
+        if (!Files.exists(notePath)) {
+            System.err.println("Error: Note not found: " + filename);
+            return false;
+        }
 
     // Load existing metadata so we can preserve it
-    Map<String, String> metadata = parseYamlHeader(notePath);
-    String title = metadata.getOrDefault("title", filename);
-    String created = metadata.getOrDefault("created", java.time.Instant.now().toString());
-    String tags = metadata.getOrDefault("tags", "");
-    String author = metadata.getOrDefault("author", "");
+        Map<String, String> metadata = parseYamlHeader(notePath);
+        String title = metadata.getOrDefault("title", filename);
+        String created = metadata.getOrDefault("created", java.time.Instant.now().toString());
+        String tags = metadata.getOrDefault("tags", "");
+        String author = metadata.getOrDefault("author", "");
 
     // Show current content to the user
-    System.out.println("Editing: " + title);
-    System.out.println("Current tags: " + (tags.isEmpty() ? "(none)" : tags));
-    System.out.println();
+        System.out.println("Editing: " + title);
+        System.out.println("Current tags: " + (tags.isEmpty() ? "(none)" : tags));
+        System.out.println();
 
-    Scanner scanner = new Scanner(System.in);
+        Scanner scanner = new Scanner(System.in);
 
-    // Let user update tags (optional)
-    System.out.print("Enter new tags (or press Enter to keep current): ");
-    String newTags = scanner.nextLine().trim();
-    if (newTags.isEmpty()) {
-        newTags = tags;
-    }
+        // Let user update tags (optional)
+        System.out.print("Enter new tags (or press Enter to keep current): ");
+        String newTags = scanner.nextLine().trim();
+        if (newTags.isEmpty()) {
+            newTags = tags;
+        }
 
     // Get new content
-    System.out.println("Enter new content (type END on a new line when done):");
-    StringBuilder content = new StringBuilder();
+        System.out.println("Enter new content (type END on a new line when done):");
+        StringBuilder content = new StringBuilder();
     while (scanner.hasNextLine()) {
         String line = scanner.nextLine();
         if (line.equals("END")) {
@@ -362,12 +362,12 @@ private static Path setup() {
     }
 
     // Build updated file with preserved created and new modified timestamp
-    String modifiedTimestamp = java.time.Instant.now().toString();
-    StringBuilder fileContent = new StringBuilder();
-    fileContent.append("---\n");
-    fileContent.append("title: ").append(title).append("\n");
-    fileContent.append("created: ").append(created).append("\n");
-    fileContent.append("modified: ").append(modifiedTimestamp).append("\n");
+        String modifiedTimestamp = java.time.Instant.now().toString();
+        StringBuilder fileContent = new StringBuilder();
+        fileContent.append("---\n");
+        fileContent.append("title: ").append(title).append("\n");
+        fileContent.append("created: ").append(created).append("\n");
+        fileContent.append("modified: ").append(modifiedTimestamp).append("\n");
     if (!newTags.isEmpty()) {
         fileContent.append("tags: [").append(newTags).append("]\n");
     }
@@ -546,10 +546,10 @@ private static Path setup() {
                 finish(createSuccess ? 0 : 1);
                 break;
             case "edit":
-                    if (args.length < 2) {
-                        System.err.println("Error: Please specify a filename.");
-                        System.err.println("Usage: java JumzysNotes edit <filename>");
-                        finish(1);
+                if (args.length < 2) {
+                    System.err.println("Error: Please specify a filename.");
+                    System.err.println("Usage: java JumzysNotes edit <filename>");
+                    finish(1);
                 }
                 boolean editSuccess = editNote(notesDir, args[1]);
                 finish(editSuccess ? 0 : 1);
