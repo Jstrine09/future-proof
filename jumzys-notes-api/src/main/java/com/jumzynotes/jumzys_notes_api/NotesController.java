@@ -169,9 +169,24 @@ public class NotesController {
         }
     }
 
-    @DeleteMapping
+    /**
+     *  DELETE /api/notes.{filename}
+     */
+    @DeleteMapping("/notes/{filename}")
+    public ResponseEntity<Map<String, String>> deleteNote(@PathVariable String filename) {
+        Path notePath = NOTES_DIR.resolve(filename);
 
+        if (!Files.exists(notePath)) {
+            return ResponseEntity.notFound().build();
+        }
 
+        try {
+            Files.delete(notePath);
+            return ResponseEntity.ok(Map.of("filename", filename, "status", "deleted"));
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
+    }
 
     /**
      * GET /api/health - Health check
