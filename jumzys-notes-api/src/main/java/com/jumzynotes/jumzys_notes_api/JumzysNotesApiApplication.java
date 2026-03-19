@@ -10,12 +10,13 @@ import org.springframework.boot.autoconfigure.SpringBootApplication;
 public class JumzysNotesApiApplication {
 
     public static void main(String[] args) throws Exception {
-        SpringApplication.run(JumzysNotesApiApplication.class, args);
+    SpringApplication.run(JumzysNotesApiApplication.class, args);
 
-        // Open browser automatically after server starts
-        if (Desktop.isDesktopSupported()) {
-            Desktop.getDesktop().browse(new URI("http://localhost:8080"));
-        }
+    // Wait for server to fully start then open browser
+    Thread.sleep(1500);
+    if (Desktop.isDesktopSupported()) {
+        Desktop.getDesktop().browse(new URI("http://localhost:8080"));
     }
+}
 
 }
