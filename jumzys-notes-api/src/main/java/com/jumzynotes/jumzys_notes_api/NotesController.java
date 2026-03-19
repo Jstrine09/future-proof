@@ -9,6 +9,7 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.apache.catalina.connector.Response;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
@@ -85,8 +86,29 @@ public class NotesController {
             .replaceAll("\\s+", "-")
             .replaceAll("-+", "-")
             .trim();
+        String timestamp = java.time.LocalDateTime.now()
+            .format(java.time.format.DateTimeFormatter.ofPattern("yyyyMMdd-HHmmss"));
+        String filename = safe + "-" + timestamp + ".md";
 
-        
+        String nowISo = java.time.Instant.now().toString();
+        StringBuilder fileContent = new StringBuilder();
+        fileContent.append("---\n");
+        fileContent.append("title: ").append(title).append("\n");
+        fileContent.append("created: ").append(nowIso).append("\n");
+        fileContent.append("modified: ").append(nowIso).append("\n");
+        if (!tags.isEmpty()) {
+            fileContent.append("tags: [").append(tags).append("]\n");
+        }
+        fileContent.append("---\n\n");
+        fileContent.append(content);
+
+        try {
+            Files.createDirectories(NOTES_DIR);
+            Files.writeString(NOTES_DIR.resolve(filename), fileContent.toString());
+            return ResponseEntity.ok(Map.of("filename", filename, "status", "created"));
+        } catch (IOException e) {
+            return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
+        }
     }
 
     /**
