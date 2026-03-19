@@ -50,9 +50,7 @@
             border: 1px solid rgb(10, 45, 30);
         }
 
-        .stat {
-            text-align: center;
-        }
+        .stat { text-align: center; }
 
         .stat .number {
             font-size: 1.5rem;
@@ -65,9 +63,7 @@
             color: rgb(240, 230, 210);
         }
 
-        .search-bar {
-            margin-bottom: 20px;
-        }
+        .search-bar { margin-bottom: 20px; }
 
         .search-bar input {
             width: 100%;
@@ -80,30 +76,21 @@
             outline: none;
         }
 
-        .search-bar input:focus {
-            border-color: rgb(240, 230, 210);
-        }
+        .search-bar input:focus { border-color: rgb(240, 230, 210); }
+        .search-bar input::placeholder { color: rgb(240, 230, 210); }
 
-        .search-bar input::placeholder {
-            color: rgb(240, 230, 210);
-        }
-
-        .notes-grid {
-            display: grid;
-            gap: 16px;
-        }
+        .notes-grid { display: grid; gap: 16px; }
 
         .note-card {
             background: rgb(50, 100, 50);
             border: 1px solid rgb(120, 140, 100);
             border-radius: 8px;
             padding: 20px;
-            cursor: pointer;
             transition: border-color 0.2s, transform 0.1s;
         }
 
         .note-card:hover {
-            border-color: rgb(120, 140, 100);
+            border-color: rgb(240, 230, 210);
             transform: translateY(-2px);
         }
 
@@ -112,6 +99,7 @@
             font-weight: 600;
             color: #fff;
             margin-bottom: 8px;
+            cursor: pointer;
         }
 
         .note-meta {
@@ -141,6 +129,48 @@
             line-height: 1.5;
         }
 
+        .note-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+        }
+
+        .btn-edit {
+            background: rgb(10, 45, 30);
+            color: rgb(240, 230, 210);
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .btn-edit:hover { background: rgb(30, 80, 50); }
+
+        .btn-delete {
+            background: rgb(120, 40, 40);
+            color: white;
+            border: none;
+            padding: 6px 14px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 0.85rem;
+        }
+
+        .btn-delete:hover { background: rgb(160, 50, 50); }
+
+        .btn-new {
+            background: rgb(10, 45, 30);
+            color: rgb(240, 230, 210);
+            border: 1px solid rgb(240, 230, 210);
+            padding: 10px 20px;
+            border-radius: 8px;
+            font-size: 1rem;
+            cursor: pointer;
+        }
+
+        .btn-new:hover { background: rgb(30, 80, 50); }
+
         /* Modal */
         .modal-overlay {
             display: none;
@@ -153,9 +183,7 @@
             align-items: center;
         }
 
-        .modal-overlay.active {
-            display: flex;
-        }
+        .modal-overlay.active { display: flex; }
 
         .modal {
             background: rgb(50, 100, 50);
@@ -188,36 +216,72 @@
             color: #ccc;
         }
 
+        .modal input, .modal textarea {
+            width: 100%;
+            padding: 10px;
+            background: rgb(10, 45, 30);
+            border: 1px solid rgb(120, 140, 100);
+            border-radius: 6px;
+            color: rgb(240, 230, 210);
+            font-size: 0.95rem;
+            font-family: inherit;
+            margin-bottom: 10px;
+        }
+
+        .modal input:focus, .modal textarea:focus {
+            border-color: rgb(240, 230, 210);
+            outline: none;
+        }
+
+        .modal input::placeholder, .modal textarea::placeholder {
+            color: rgb(120, 140, 100);
+        }
+
+        .btn-save {
+            width: 100%;
+            background: rgb(10, 45, 30);
+            color: rgb(240, 230, 210);
+            border: 1px solid rgb(240, 230, 210);
+            padding: 10px;
+            border-radius: 6px;
+            font-size: 1rem;
+            cursor: pointer;
+            margin-top: 5px;
+        }
+
+        .btn-save:hover { background: rgb(30, 80, 50); }
+
         .close-btn {
             position: absolute;
             top: 15px; right: 20px;
             background: none;
             border: none;
-            color: #888;
+            color: rgb(240, 230, 210);
             font-size: 1.5rem;
             cursor: pointer;
         }
 
-        .close-btn:hover { color: rgb(240, 230, 210); }
+        .close-btn:hover { color: #fff; }
 
         .loading {
             text-align: center;
             padding: 60px;
-            color: #888;
+            color: rgb(240, 230, 210);
         }
 
         .empty {
             text-align: center;
             padding: 60px;
-            color: #555;
+            color: rgb(120, 140, 100);
         }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>📝 Jumzys Notes</h1>
-    <p>Remember these things!</p>
+    <h1>📝 JumzysNotes</h1>
+    <p>Your personal notes manager</p>
+    <button class="btn-new" onclick="openCreateModal()">+ New Note</button>
 </header>
 
 <div class="container">
@@ -243,7 +307,7 @@
 
 </div>
 
-<!-- Modal for reading a note -->
+<!-- Read Modal -->
 <div class="modal-overlay" id="modal-overlay" onclick="closeModal(event)">
     <div class="modal">
         <button class="close-btn" onclick="closeModal()">✕</button>
@@ -253,13 +317,38 @@
     </div>
 </div>
 
+<!-- Create Modal -->
+<div class="modal-overlay" id="create-modal-overlay" onclick="closeCreateModal(event)">
+    <div class="modal">
+        <button class="close-btn" onclick="closeCreateModal()">✕</button>
+        <h2>New Note</h2>
+        <input id="create-title" placeholder="Title" />
+        <input id="create-tags" placeholder="Tags (comma separated)" />
+        <textarea id="create-content" placeholder="Write your note here..." rows="8"></textarea>
+        <button class="btn-save" onclick="submitCreate()">Save Note</button>
+    </div>
+</div>
+
+<!-- Edit Modal -->
+<div class="modal-overlay" id="edit-modal-overlay" onclick="closeEditModal(event)">
+    <div class="modal">
+        <button class="close-btn" onclick="closeEditModal()">✕</button>
+        <h2>Edit Note</h2>
+        <input id="edit-title" placeholder="Title" />
+        <input id="edit-tags" placeholder="Tags (comma separated)" />
+        <textarea id="edit-content" placeholder="Note content..." rows="8"></textarea>
+        <button class="btn-save" onclick="submitEdit()">Save Changes</button>
+    </div>
+</div>
+
 <script>
     let allNotes = [];
+    let editingFilename = null;
 
     // Parse YAML header from note content
     function parseNote(filename, rawContent) {
         const lines = rawContent.split('\n');
-        const meta = { title: filename, created: '', modified: '', tags: [], body: '' };
+        const meta = { filename: filename, title: filename, created: '', modified: '', tags: [], body: '' };
 
         if (lines[0].trim() !== '---') {
             meta.body = rawContent;
@@ -296,9 +385,7 @@
         try {
             const response = await fetch('/api/notes');
             const data = await response.json();
-
             allNotes = data.map(n => parseNote(n.filename, n.content));
-
             updateStats();
             renderNotes(allNotes);
         } catch (err) {
@@ -323,15 +410,21 @@
         }
 
         grid.innerHTML = notes.map((note, i) => `
-            <div class="note-card" onclick="openModal(${i})">
-                <div class="note-title">${note.title}</div>
-                <div class="note-meta">
-                    ${note.modified ? 'Modified: ' + note.modified.substring(0, 10) : ''}
+            <div class="note-card">
+                <div onclick="openModal(${i})" style="cursor:pointer;">
+                    <div class="note-title">${note.title}</div>
+                    <div class="note-meta">
+                        ${note.modified ? 'Modified: ' + note.modified.substring(0, 10) : ''}
+                    </div>
+                    <div class="note-tags">
+                        ${note.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+                    </div>
+                    ${note.body ? `<div class="note-preview">${note.body.substring(0, 100)}...</div>` : ''}
                 </div>
-                <div class="note-tags">
-                    ${note.tags.map(t => `<span class="tag">${t}</span>`).join('')}
+                <div class="note-actions">
+                    <button class="btn-edit" onclick="openEditModal(${i})">✏️ Edit</button>
+                    <button class="btn-delete" onclick="confirmDelete(${i})">🗑️ Delete</button>
                 </div>
-                ${note.body ? `<div class="note-preview">${note.body.substring(0, 100)}...</div>` : ''}
             </div>
         `).join('');
     }
@@ -347,7 +440,7 @@
         renderNotes(filtered);
     }
 
-    // Open modal
+    // READ modal
     function openModal(index) {
         const note = allNotes[index];
         document.getElementById('modal-title').textContent = note.title;
@@ -357,19 +450,107 @@
         document.getElementById('modal-overlay').classList.add('active');
     }
 
-    // Close modal
     function closeModal(event) {
         if (!event || event.target === document.getElementById('modal-overlay')) {
             document.getElementById('modal-overlay').classList.remove('active');
         }
     }
 
-    // Close modal with Escape key
+    // CREATE modal
+    function openCreateModal() {
+        document.getElementById('create-title').value = '';
+        document.getElementById('create-tags').value = '';
+        document.getElementById('create-content').value = '';
+        document.getElementById('create-modal-overlay').classList.add('active');
+    }
+
+    function closeCreateModal(event) {
+        if (!event || event.target === document.getElementById('create-modal-overlay')) {
+            document.getElementById('create-modal-overlay').classList.remove('active');
+        }
+    }
+
+    async function submitCreate() {
+        const title = document.getElementById('create-title').value.trim();
+        const tags = document.getElementById('create-tags').value.trim();
+        const content = document.getElementById('create-content').value.trim();
+
+        if (!title) { alert('Title cannot be empty!'); return; }
+
+        const response = await fetch('/api/notes', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, tags, content })
+        });
+
+        if (response.ok) {
+            closeCreateModal();
+            loadNotes();
+        } else {
+            alert('Error creating note.');
+        }
+    }
+
+    // EDIT modal
+    function openEditModal(index) {
+        const note = allNotes[index];
+        editingFilename = note.filename;
+        document.getElementById('edit-title').value = note.title;
+        document.getElementById('edit-tags').value = note.tags.join(', ');
+        document.getElementById('edit-content').value = note.body;
+        document.getElementById('edit-modal-overlay').classList.add('active');
+    }
+
+    function closeEditModal(event) {
+        if (!event || event.target === document.getElementById('edit-modal-overlay')) {
+            document.getElementById('edit-modal-overlay').classList.remove('active');
+        }
+    }
+
+    async function submitEdit() {
+        const title = document.getElementById('edit-title').value.trim();
+        const tags = document.getElementById('edit-tags').value.trim();
+        const content = document.getElementById('edit-content').value.trim();
+
+        const response = await fetch(`/api/notes/${editingFilename}`, {
+            method: 'PUT',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, tags, content })
+        });
+
+        if (response.ok) {
+            closeEditModal();
+            loadNotes();
+        } else {
+            alert('Error updating note.');
+        }
+    }
+
+    // DELETE
+    async function confirmDelete(index) {
+        const note = allNotes[index];
+        if (!confirm(`Delete "${note.title}"?`)) return;
+
+        const response = await fetch(`/api/notes/${note.filename}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            loadNotes();
+        } else {
+            alert('Error deleting note.');
+        }
+    }
+
+    // Escape key closes any open modal
     document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') closeModal();
+        if (e.key === 'Escape') {
+            closeModal();
+            closeCreateModal();
+            closeEditModal();
+        }
     });
 
-    // Load notes on page load
     loadNotes();
 </script>
 
