@@ -9,10 +9,13 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.GetMapping;
 import org.springframework.web.bind.annotation.PathVariable;
+import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
+
 
 @RestController
 @RequestMapping("/api")
@@ -65,6 +68,25 @@ public class NotesController {
         note.put("filename", filename);
         note.put("content", Files.readString(notePath));
         return note;
+    }
+
+    @PostMapping("/notes")
+    public ResponseEntity<Map<String, String>> createNote(@RequestBody Map<String, String> body) {
+        String title = body.getOrDefault("title", "").trim();
+        String content =body.getOrDefault("content", "").trim();
+        String tags = body.getOrDefault("tags", "").trim();
+    
+        if (title.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "Title cannot be empty"));
+        }
+
+        String safe = title.toLowerCase()
+            .replaceAll("[^a-z0-9\\s-]", "")
+            .replaceAll("\\s+", "-")
+            .replaceAll("-+", "-")
+            .trim();
+
+        
     }
 
     /**
