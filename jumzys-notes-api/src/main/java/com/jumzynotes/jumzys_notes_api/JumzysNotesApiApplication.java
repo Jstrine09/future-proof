@@ -10,7 +10,7 @@ public class JumzysNotesApiApplication {
     SpringApplication.run(JumzysNotesApiApplication.class, args);
 
     // Open browser using Mac's open command
-    Thread.sleep(1500);
+    Thread.sleep(1000);
     Runtime.getRuntime().exec(new String[]{"open", "http://localhost:8080"});
 	}
 }
