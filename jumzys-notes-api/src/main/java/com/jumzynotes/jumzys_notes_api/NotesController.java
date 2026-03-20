@@ -19,6 +19,8 @@ import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
 
+import jakarta.annotation.PostConstruct;
+
 @RestController
 @RequestMapping("/api")
 public class NotesController {
@@ -26,6 +28,18 @@ public class NotesController {
     private static final Path NOTES_DIR = Path.of(
         System.getProperty("user.home"), ".notes", "notes"
     );
+
+    private static final Path DATASETS_DIR = Path.of(
+        System.getProperty("user.home"), ".notes", "datasets"
+    );
+
+    /**
+     * Create necessary directories on startup.
+     */
+    @PostConstruct
+    public void init() throws IOException {
+        Files.createDirectories(DATASETS_DIR);
+    }
 
     /**
      * GET /api/notes - List all notes
@@ -184,6 +198,157 @@ public class NotesController {
         } catch (IOException e) {
             return ResponseEntity.internalServerError().body(Map.of("error", e.getMessage()));
         }
+    }
+
+    /**
+     * GET /api/datasets - List all datasets
+     */
+    @GetMapping("/datasets")
+    public List<Map<String, String>> listDatasets() throws IOException {
+        if (!Files.exists(DATASETS_DIR)) {
+            return List.of();
+        }
+
+        try (Stream<Path> paths = Files.walk(DATASETS_DIR, 1)) {
+            return paths
+                .filter(Files::isRegularFile)
+                .filter(p -> {
+                    String name = p.getFileName().toString();
+                    return name.endsWith(".csv") || name.endsWith(".json");
+                })
+                .sorted()
+                .map(p -> {
+                    Map<String, String> dataset = new HashMap<>();
+                    dataset.put("filename", p.getFileName().toString());
+                    dataset.put("size", String.valueOf(p.toFile().length()));
+                    // Check for sidecar YAML
+                    String sidecar = p.getFileName().toString() + ".dataset.yml";
+                    Path sidecarPath = DATASETS_DIR.resolve(sidecar);
+                    dataset.put("hasMeta", String.valueOf(Files.exists(sidecarPath)));
+                    return dataset;
+                })
+                .collect(Collectors.toList());
+        }
+    }
+
+    /**
+     * POST /api/datasets - Upload a dataset file
+     */
+    @PostMapping("/datasets")
+    public ResponseEntity<Map<String, String>> uploadDataset(
+            @RequestBody Map<String, String> body) throws IOException {
+
+        String filename = body.getOrDefault("filename", "").trim();
+        String content = body.getOrDefault("content", "").trim();
+        String title = body.getOrDefault("title", filename).trim();
+
+        if (filename.isEmpty() || content.isEmpty()) {
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", "Filename and content are required"));
+        }
+
+        if (!filename.endsWith(".csv") && !filename.endsWith(".json")) {
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", "Only CSV and JSON files are supported"));
+        }
+
+        // Save the dataset file
+        Path datasetPath = DATASETS_DIR.resolve(filename);
+        Files.writeString(datasetPath, content);
+
+        // Count rows for CSV
+        int rowCount = 0;
+        if (filename.endsWith(".csv")) {
+            String[] lines = content.split("\n");
+            rowCount = Math.max(0, lines.length - 1); // subtract header row
+        }
+
+        // Create sidecar YAML metadata file
+        String nowIso = java.time.Instant.now().toString();
+        String sidecarContent = String.format("""
+                title: %s
+                filename: %s
+                created: %s
+                modified: %s
+                format: %s
+                size: %d
+                rowCount: %d
+                """,
+                title,
+                filename,
+                nowIso,
+                nowIso,
+                filename.endsWith(".csv") ? "csv" : "json",
+                content.length(),
+                rowCount);
+
+        String sidecarFilename = filename + ".dataset.yml";
+        Files.writeString(DATASETS_DIR.resolve(sidecarFilename), sidecarContent);
+
+        return ResponseEntity.ok(Map.of(
+            "filename", filename,
+            "sidecar", sidecarFilename,
+            "status", "uploaded"
+        ));
+    }
+
+    /**
+     * GET /api/datasets/{filename}/preview - Preview first 5 rows of a dataset
+     */
+    @GetMapping("/datasets/{filename}/preview")
+    public ResponseEntity<Map<String, Object>> previewDataset(
+            @PathVariable String filename) throws IOException {
+
+        Path datasetPath = DATASETS_DIR.resolve(filename);
+
+        if (!Files.exists(datasetPath)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Map<String, Object> preview = new HashMap<>();
+        preview.put("filename", filename);
+
+        if (filename.endsWith(".csv")) {
+            List<String> lines = Files.readAllLines(datasetPath);
+            preview.put("headers", lines.isEmpty() ? List.of() : 
+                List.of(lines.get(0).split(",")));
+            preview.put("rows", lines.stream()
+                .skip(1)
+                .limit(5)
+                .map(line -> List.of(line.split(",")))
+                .collect(Collectors.toList()));
+            preview.put("totalRows", Math.max(0, lines.size() - 1));
+        } else {
+            String content = Files.readString(datasetPath);
+            preview.put("content", content.substring(0, Math.min(500, content.length())));
+        }
+
+        return ResponseEntity.ok(preview);
+    }
+
+    /**
+     * DELETE /api/datasets/{filename} - Delete a dataset and its sidecar
+     */
+    @DeleteMapping("/datasets/{filename}")
+    public ResponseEntity<Map<String, String>> deleteDataset(
+            @PathVariable String filename) throws IOException {
+
+        Path datasetPath = DATASETS_DIR.resolve(filename);
+
+        if (!Files.exists(datasetPath)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        // Delete the dataset file
+        Files.delete(datasetPath);
+
+        // Delete sidecar if it exists
+        Path sidecarPath = DATASETS_DIR.resolve(filename + ".dataset.yml");
+        if (Files.exists(sidecarPath)) {
+            Files.delete(sidecarPath);
+        }
+
+        return ResponseEntity.ok(Map.of("filename", filename, "status", "deleted"));
     }
 
     /**

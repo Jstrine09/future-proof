@@ -29,11 +29,6 @@
             letter-spacing: 1px;
         }
 
-        header p {
-            color: rgb(240, 230, 210);
-            font-size: 0.9rem;
-        }
-
         .container {
             max-width: 900px;
             margin: 40px auto;
@@ -280,11 +275,15 @@
 
 <header>
     <h1>📝 JumzysNotes</h1>
-    <p>Your personal notes manager</p>
     <div style="display:flex; gap:10px; align-items:center;">
-    <button class="btn-new" onclick="openStatsModal()">📊 Stats</button>
-    <button class="btn-new" onclick="openCreateModal()">+ New Note</button>
-    <form action="/logout" method="post">
+        <button class="btn-new" onclick="showView('notes')">📝 Notes</button>
+        <button class="btn-new" onclick="showView('datasets')">📊 Datasets</button>
+    </div>
+    <div style="display:flex; gap:10px; align-items:center;">
+        <button class="btn-new" onclick="openStatsModal()">📈 Stats</button>
+        <button class="btn-new" onclick="openCreateModal()" id="btn-new-note">+ New Note</button>
+        <button class="btn-new" onclick="openUploadModal()" id="btn-upload-dataset" style="display:none;">+ Upload Dataset</button>
+        <form action="/logout" method="post">
             <input type="hidden" name="_csrf" value="" id="csrf-token"/>
             <button type="submit" style="
                 background: none;
@@ -318,6 +317,10 @@
 
     <div class="notes-grid" id="notes-grid">
         <div class="loading">Loading your notes...</div>
+    </div>
+
+    <div id="datasets-grid" style="display:none;">
+        <div class="loading">Loading datasets...</div>
     </div>
 
 </div>
@@ -356,16 +359,32 @@
     </div>
 </div>
 
+<!-- Stats Modal -->
+<div class="modal-overlay" id="stats-modal-overlay" onclick="closeStatsModal(event)">
+    <div class="modal">
+        <button class="close-btn" onclick="closeStatsModal()">✕</button>
+        <h2>📊 Notes Statistics</h2>
+        <div id="stats-content" style="margin-top:15px;">
+            <div class="loading">Loading stats...</div>
+        </div>
+    </div>
+</div>
+
+<!-- Upload Dataset Modal -->
+<div class="modal-overlay" id="upload-modal-overlay" onclick="closeUploadModal(event)">
+    <div class="modal">
+        <button class="close-btn" onclick="closeUploadModal()">✕</button>
+        <h2>Upload Dataset</h2>
+        <input id="upload-title" placeholder="Dataset title" />
+        <input id="upload-filename" placeholder="Filename (e.g. sales.csv or data.json)" />
+        <textarea id="upload-content" placeholder="Paste your CSV or JSON content here..." rows="10"></textarea>
+        <button class="btn-save" onclick="submitUpload()">Upload Dataset</button>
+    </div>
+</div>
+
 <script>
     let allNotes = [];
     let editingFilename = null;
-
-    // Fetch CSRF token for logout
-    async function fetchCsrfToken() {
-        const response = await fetch('/api/csrf');
-        const data = await response.json();
-        document.getElementById('csrf-token').value = data.token;
-    }
 
     // Parse YAML header from note content
     function parseNote(filename, rawContent) {
@@ -400,6 +419,25 @@
 
         meta.body = lines.slice(yamlEnd + 1).join('\n').trim();
         return meta;
+    }
+
+    // VIEW SWITCHING
+    function showView(view) {
+        if (view === 'notes') {
+            document.getElementById('notes-grid').style.display = 'grid';
+            document.getElementById('datasets-grid').style.display = 'none';
+            document.getElementById('btn-new-note').style.display = 'block';
+            document.getElementById('btn-upload-dataset').style.display = 'none';
+            document.getElementById('search-input').style.display = 'block';
+            loadNotes();
+        } else {
+            document.getElementById('notes-grid').style.display = 'none';
+            document.getElementById('datasets-grid').style.display = 'block';
+            document.getElementById('btn-new-note').style.display = 'none';
+            document.getElementById('btn-upload-dataset').style.display = 'block';
+            document.getElementById('search-input').style.display = 'none';
+            loadDatasets();
+        }
     }
 
     // Fetch notes from API
@@ -444,8 +482,8 @@
                     ${note.body ? `<div class="note-preview">${note.body.substring(0, 100)}...</div>` : ''}
                 </div>
                 <div class="note-actions">
-                    <button class="btn-edit" onclick="openEditModal(${i})">Edit</button>
-                    <button class="btn-delete" onclick="confirmDelete(${i})">Delete</button>
+                    <button class="btn-edit" onclick="openEditModal(${i})">✏️ Edit</button>
+                    <button class="btn-delete" onclick="confirmDelete(${i})">🗑️ Delete</button>
                 </div>
             </div>
         `).join('');
@@ -564,26 +602,141 @@
         }
     }
 
-    document.addEventListener('keydown', e => {
-    if (e.key === 'Escape') {
-        closeModal();
-        closeCreateModal();
-        closeEditModal();
-        closeStatsModal();
-    }
-});
+    // DATASETS
+    async function loadDatasets() {
+        const grid = document.getElementById('datasets-grid');
+        grid.innerHTML = '<div class="loading">Loading datasets...</div>';
 
-    // Fetch CSRF token for logout
-    async function fetchCsrfToken() {
-        const response = await fetch('/api/csrf');
-        const data = await response.json();
-        document.getElementById('csrf-token').value = data.token;
+        try {
+            const response = await fetch('/api/datasets');
+            const datasets = await response.json();
+
+            if (datasets.length === 0) {
+                grid.innerHTML = '<div class="empty">No datasets yet. Upload one!</div>';
+                return;
+            }
+
+            grid.innerHTML = datasets.map(d => `
+                <div class="note-card" style="margin-bottom:16px;">
+                    <div class="note-title">📄 ${d.filename}</div>
+                    <div class="note-meta">Size: ${Math.round(d.size / 1024 * 10) / 10} KB</div>
+                    <div class="note-actions" style="margin-top:12px;">
+                        <button class="btn-edit" onclick="previewDataset('${d.filename}')">👁️ Preview</button>
+                        <button class="btn-delete" onclick="confirmDeleteDataset('${d.filename}')">🗑️ Delete</button>
+                    </div>
+                </div>
+            `).join('');
+        } catch (err) {
+            grid.innerHTML = '<div class="empty">Could not load datasets.</div>';
+        }
+    }
+
+    async function previewDataset(filename) {
+        try {
+            const response = await fetch(`/api/datasets/${filename}/preview`);
+            const data = await response.json();
+
+            let previewHtml = `<h2>👁️ Preview: ${filename}</h2>`;
+
+            if (data.headers) {
+                previewHtml += `
+                    <div style="overflow-x:auto; margin-top:15px;">
+                        <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
+                            <thead>
+                                <tr>
+                                    ${data.headers.map(h => `
+                                        <th style="padding:8px; background:rgb(10,45,30);
+                                            color:rgb(240,230,210); text-align:left;
+                                            border:1px solid rgb(120,140,100);">${h}</th>
+                                    `).join('')}
+                                </tr>
+                            </thead>
+                            <tbody>
+                                ${data.rows.map(row => `
+                                    <tr>
+                                        ${row.map(cell => `
+                                            <td style="padding:8px; border:1px solid rgb(120,140,100);
+                                                color:#ccc;">${cell}</td>
+                                        `).join('')}
+                                    </tr>
+                                `).join('')}
+                            </tbody>
+                        </table>
+                        <div style="color:rgb(120,140,100); font-size:0.8rem; margin-top:8px;">
+                            Showing first 5 of ${data.totalRows} rows
+                        </div>
+                    </div>
+                `;
+            } else {
+                previewHtml += `<pre style="margin-top:15px; color:#ccc;">${data.content}</pre>`;
+            }
+
+            document.getElementById('modal-title').innerHTML = '';
+            document.getElementById('modal-meta').innerHTML = '';
+            document.getElementById('modal-content').innerHTML = previewHtml;
+            document.getElementById('modal-overlay').classList.add('active');
+
+        } catch (err) {
+            alert('Could not load preview.');
+        }
+    }
+
+    async function confirmDeleteDataset(filename) {
+        if (!confirm(`Delete dataset "${filename}"?`)) return;
+
+        const response = await fetch(`/api/datasets/${filename}`, {
+            method: 'DELETE'
+        });
+
+        if (response.ok) {
+            loadDatasets();
+        } else {
+            alert('Error deleting dataset.');
+        }
+    }
+
+    // UPLOAD modal
+    function openUploadModal() {
+        document.getElementById('upload-title').value = '';
+        document.getElementById('upload-filename').value = '';
+        document.getElementById('upload-content').value = '';
+        document.getElementById('upload-modal-overlay').classList.add('active');
+    }
+
+    function closeUploadModal(event) {
+        if (!event || event.target === document.getElementById('upload-modal-overlay')) {
+            document.getElementById('upload-modal-overlay').classList.remove('active');
+        }
+    }
+
+    async function submitUpload() {
+        const title = document.getElementById('upload-title').value.trim();
+        const filename = document.getElementById('upload-filename').value.trim();
+        const content = document.getElementById('upload-content').value.trim();
+
+        if (!filename || !content) {
+            alert('Filename and content are required!');
+            return;
+        }
+
+        const response = await fetch('/api/datasets', {
+            method: 'POST',
+            headers: { 'Content-Type': 'application/json' },
+            body: JSON.stringify({ title, filename, content })
+        });
+
+        if (response.ok) {
+            closeUploadModal();
+            loadDatasets();
+        } else {
+            alert('Error uploading dataset.');
+        }
     }
 
     // STATS modal
     async function openStatsModal() {
         document.getElementById('stats-modal-overlay').classList.add('active');
-        document.getElementById('stats-content').innerHTML = 
+        document.getElementById('stats-content').innerHTML =
             '<div class="loading">Loading stats...</div>';
 
         try {
@@ -644,18 +797,27 @@
         }
     }
 
+    // Escape key closes any open modal
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+            closeModal();
+            closeCreateModal();
+            closeEditModal();
+            closeStatsModal();
+            closeUploadModal();
+        }
+    });
+
+    // Fetch CSRF token for logout
+    async function fetchCsrfToken() {
+        const response = await fetch('/api/csrf');
+        const data = await response.json();
+        document.getElementById('csrf-token').value = data.token;
+    }
+
     fetchCsrfToken();
     loadNotes();
 </script>
-    <!-- Stats Modal -->
-    <div class="modal-overlay" id="stats-modal-overlay" onclick="closeStatsModal(event)">
-        <div class="modal">
-            <button class="close-btn" onclick="closeStatsModal()">✕</button>
-            <h2>📊 Notes Statistics</h2>
-            <div id="stats-content" style="margin-top:15px;">
-                <div class="loading">Loading stats...</div>
-            </div>
-        </div>
-    </div>
+
 </body>
 </html>
