@@ -641,15 +641,20 @@
             }
 
             grid.innerHTML = datasets.map(d => `
-                <div class="note-card" style="margin-bottom:16px;">
-                    <div class="note-title">📄 ${d.filename}</div>
-                    <div class="note-meta">Size: ${Math.round(d.size / 1024 * 10) / 10} KB</div>
-                    <div class="note-actions" style="margin-top:12px;">
-                        <button class="btn-edit" onclick="previewDataset('${d.filename}')">👁️ Preview</button>
-                        <button class="btn-delete" onclick="confirmDeleteDataset('${d.filename}')">🗑️ Delete</button>
-                    </div>
+            <div class="note-card" style="margin-bottom:16px;">
+                <div class="note-title" onclick="window.location.href='/dataset.html?file=${d.filename}'" 
+                    style="cursor:pointer;">
+                    📄 ${d.filename}
                 </div>
-            `).join('');
+                <div class="note-meta">Size: ${Math.round(d.size / 1024 * 10) / 10} KB</div>
+                <div class="note-actions" style="margin-top:12px;">
+                    <button class="btn-edit" onclick="window.location.href='/dataset.html?file=${d.filename}'">
+                        👁️ View Full
+                    </button>
+                    <button class="btn-delete" onclick="confirmDeleteDataset('${d.filename}')">🗑️ Delete</button>
+                </div>
+            </div>
+        `).join('');
         } catch (err) {
             grid.innerHTML = '<div class="empty">Could not load datasets.</div>';
         }

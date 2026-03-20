@@ -327,6 +327,39 @@ public class NotesController {
     }
 
     /**
+ * GET /api/datasets/{filename}/full - Get full dataset content
+ */
+    @GetMapping("/datasets/{filename}/full")
+    public ResponseEntity<Map<String, Object>> fullDataset(
+            @PathVariable String filename) throws IOException {
+
+        Path datasetPath = DATASETS_DIR.resolve(filename);
+
+        if (!Files.exists(datasetPath)) {
+            return ResponseEntity.notFound().build();
+        }
+
+        Map<String, Object> data = new HashMap<>();
+        data.put("filename", filename);
+
+        if (filename.endsWith(".csv")) {
+            List<String> lines = Files.readAllLines(datasetPath);
+            data.put("headers", lines.isEmpty() ? List.of() :
+                List.of(lines.get(0).split(",")));
+            data.put("rows", lines.stream()
+                .skip(1)
+                .map(line -> List.of(line.split(",")))
+                .collect(Collectors.toList()));
+            data.put("totalRows", Math.max(0, lines.size() - 1));
+        } else {
+            String content = Files.readString(datasetPath);
+            data.put("content", content);
+        }
+
+        return ResponseEntity.ok(data);
+    }
+
+    /**
      * DELETE /api/datasets/{filename} - Delete a dataset and its sidecar
      */
     @DeleteMapping("/datasets/{filename}")

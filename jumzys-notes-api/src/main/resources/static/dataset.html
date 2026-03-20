@@ -1,0 +1,336 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>Dataset Viewer - JumzysNotes</title>
+    <style>
+        * { margin: 0; padding: 0; box-sizing: border-box; }
+
+        body {
+            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
+            background: rgb(10, 45, 30);
+            color: #e0e0e0;
+            min-height: 100vh;
+        }
+
+        header {
+            background: rgb(50, 100, 50);
+            padding: 20px 40px;
+            border-bottom: 2px solid rgb(10, 45, 30);
+            display: flex;
+            align-items: center;
+            gap: 20px;
+        }
+
+        .back-btn {
+            background: rgb(10, 45, 30);
+            color: rgb(240, 230, 210);
+            border: 1px solid rgb(240, 230, 210);
+            padding: 8px 16px;
+            border-radius: 8px;
+            font-size: 0.9rem;
+            cursor: pointer;
+            text-decoration: none;
+        }
+
+        .back-btn:hover { background: rgb(30, 80, 50); }
+
+        header h1 {
+            font-size: 1.4rem;
+            color: rgb(240, 230, 210);
+        }
+
+        header p {
+            font-size: 0.85rem;
+            color: rgb(120, 140, 100);
+            margin-top: 4px;
+        }
+
+        .container {
+            padding: 30px 40px;
+        }
+
+        .meta-bar {
+            background: rgb(50, 100, 50);
+            border-radius: 8px;
+            padding: 15px 20px;
+            margin-bottom: 20px;
+            display: flex;
+            gap: 30px;
+            border: 1px solid rgb(10, 45, 30);
+        }
+
+        .meta-item {
+            text-align: center;
+        }
+
+        .meta-item .number {
+            font-size: 1.3rem;
+            font-weight: bold;
+            color: rgb(240, 230, 210);
+        }
+
+        .meta-item .label {
+            font-size: 0.8rem;
+            color: rgb(120, 140, 100);
+        }
+
+        .search-bar {
+            margin-bottom: 20px;
+        }
+
+        .search-bar input {
+            width: 100%;
+            padding: 12px 16px;
+            background: rgb(50, 100, 50);
+            border: 1px solid rgb(120, 140, 100);
+            border-radius: 8px;
+            color: #e0e0e0;
+            font-size: 1rem;
+            outline: none;
+        }
+
+        .search-bar input:focus { border-color: rgb(240, 230, 210); }
+        .search-bar input::placeholder { color: rgb(120, 140, 100); }
+
+        .table-wrapper {
+            overflow-x: auto;
+            border-radius: 8px;
+            border: 1px solid rgb(120, 140, 100);
+        }
+
+        table {
+            width: 100%;
+            border-collapse: collapse;
+            font-size: 0.9rem;
+        }
+
+        thead tr {
+            background: rgb(10, 45, 30);
+            position: sticky;
+            top: 0;
+        }
+
+        th {
+            padding: 12px 16px;
+            color: rgb(240, 230, 210);
+            text-align: left;
+            border-bottom: 2px solid rgb(120, 140, 100);
+            border-right: 1px solid rgb(120, 140, 100);
+            white-space: nowrap;
+            cursor: pointer;
+        }
+
+        th:hover { background: rgb(30, 80, 50); }
+
+        td {
+            padding: 10px 16px;
+            border-bottom: 1px solid rgb(30, 80, 50);
+            border-right: 1px solid rgb(30, 80, 50);
+            color: #ccc;
+        }
+
+        tr:hover td { background: rgb(50, 100, 50); }
+
+        tr:nth-child(even) td { background: rgb(15, 55, 35); }
+        tr:nth-child(even):hover td { background: rgb(50, 100, 50); }
+
+        .json-view {
+            background: rgb(10, 45, 30);
+            border-radius: 8px;
+            padding: 20px;
+            border: 1px solid rgb(120, 140, 100);
+            white-space: pre-wrap;
+            font-family: monospace;
+            font-size: 0.9rem;
+            color: #ccc;
+            max-height: 70vh;
+            overflow-y: auto;
+        }
+
+        .loading {
+            text-align: center;
+            padding: 60px;
+            color: rgb(240, 230, 210);
+        }
+
+        .row-count {
+            color: rgb(120, 140, 100);
+            font-size: 0.85rem;
+            margin-top: 10px;
+            text-align: right;
+        }
+    </style>
+</head>
+<body>
+
+<header>
+    <a href="/" class="back-btn">← Back</a>
+    <div>
+        <h1 id="page-title">Loading...</h1>
+        <p id="page-meta"></p>
+    </div>
+</header>
+
+<div class="container">
+
+    <div class="meta-bar" id="meta-bar" style="display:none;">
+        <div class="meta-item">
+            <div class="number" id="meta-rows">-</div>
+            <div class="label">Rows</div>
+        </div>
+        <div class="meta-item">
+            <div class="number" id="meta-cols">-</div>
+            <div class="label">Columns</div>
+        </div>
+        <div class="meta-item">
+            <div class="number" id="meta-size">-</div>
+            <div class="label">KB</div>
+        </div>
+    </div>
+
+    <div class="search-bar" id="search-bar" style="display:none;">
+        <input type="text" id="search-input" placeholder="Filter rows..." oninput="filterRows()">
+    </div>
+
+    <div id="content">
+        <div class="loading">Loading dataset...</div>
+    </div>
+
+</div>
+
+<script>
+    let allRows = [];
+    let headers = [];
+
+    // Get filename from URL
+    const params = new URLSearchParams(window.location.search);
+    const filename = params.get('file');
+
+    if (!filename) {
+        document.getElementById('content').innerHTML = 
+            '<div class="loading">No file specified.</div>';
+    } else {
+        loadDataset(filename);
+    }
+
+    async function loadDataset(filename) {
+        document.getElementById('page-title').textContent = filename;
+
+        try {
+            const response = await fetch(`/api/datasets/${filename}/full`);
+            const data = await response.json();
+
+            if (filename.endsWith('.csv')) {
+                renderCSV(data);
+            } else {
+                renderJSON(data);
+            }
+        } catch (err) {
+            document.getElementById('content').innerHTML =
+                '<div class="loading">Could not load dataset.</div>';
+        }
+    }
+
+    function renderCSV(data) {
+        headers = data.headers || [];
+        allRows = data.rows || [];
+
+        // Update meta bar
+        document.getElementById('meta-rows').textContent = allRows.length;
+        document.getElementById('meta-cols').textContent = headers.length;
+        document.getElementById('meta-size').textContent = 
+            Math.round(JSON.stringify(data).length / 1024 * 10) / 10;
+        document.getElementById('meta-bar').style.display = 'flex';
+        document.getElementById('search-bar').style.display = 'block';
+
+        document.getElementById('page-meta').textContent = 
+            `${allRows.length} rows × ${headers.length} columns`;
+
+        renderTable(allRows);
+    }
+
+    function renderTable(rows) {
+        if (rows.length === 0) {
+            document.getElementById('content').innerHTML = 
+                '<div class="loading">No rows to display.</div>';
+            return;
+        }
+
+        document.getElementById('content').innerHTML = `
+            <div class="table-wrapper">
+                <table>
+                    <thead>
+                        <tr>
+                            <th style="color:rgb(120,140,100); width:50px;">#</th>
+                            ${headers.map((h, i) => `
+                                <th onclick="sortBy(${i})">${h} ↕</th>
+                            `).join('')}
+                        </tr>
+                    </thead>
+                    <tbody>
+                        ${rows.map((row, i) => `
+                            <tr>
+                                <td style="color:rgb(120,140,100);">${i + 1}</td>
+                                ${row.map(cell => `<td>${cell}</td>`).join('')}
+                            </tr>
+                        `).join('')}
+                    </tbody>
+                </table>
+            </div>
+            <div class="row-count">Showing ${rows.length} of ${allRows.length} rows</div>
+        `;
+    }
+
+    function renderJSON(data) {
+        const content = JSON.stringify(data.content, null, 2);
+        document.getElementById('content').innerHTML = `
+            <div class="json-view">${content}</div>
+        `;
+        document.getElementById('page-meta').textContent = 'JSON dataset';
+    }
+
+    function filterRows() {
+        const keyword = document.getElementById('search-input').value.toLowerCase();
+        if (!keyword) {
+            renderTable(allRows);
+            return;
+        }
+        const filtered = allRows.filter(row =>
+            row.some(cell => cell.toLowerCase().includes(keyword))
+        );
+        renderTable(filtered);
+    }
+
+    let sortAsc = true;
+    let lastSortCol = -1;
+
+    function sortBy(colIndex) {
+        if (lastSortCol === colIndex) {
+            sortAsc = !sortAsc;
+        } else {
+            sortAsc = true;
+            lastSortCol = colIndex;
+        }
+
+        const sorted = [...allRows].sort((a, b) => {
+            const valA = a[colIndex] || '';
+            const valB = b[colIndex] || '';
+            const numA = parseFloat(valA);
+            const numB = parseFloat(valB);
+
+            if (!isNaN(numA) && !isNaN(numB)) {
+                return sortAsc ? numA - numB : numB - numA;
+            }
+            return sortAsc
+                ? valA.localeCompare(valB)
+                : valB.localeCompare(valA);
+        });
+
+        renderTable(sorted);
+    }
+</script>
+
+</body>
+</html>
