@@ -282,8 +282,9 @@
     <h1>📝 JumzysNotes</h1>
     <p>Your personal notes manager</p>
     <div style="display:flex; gap:10px; align-items:center;">
-        <button class="btn-new" onclick="openCreateModal()">+ New Note</button>
-        <form action="/logout" method="post">
+    <button class="btn-new" onclick="openStatsModal()">📊 Stats</button>
+    <button class="btn-new" onclick="openCreateModal()">+ New Note</button>
+    <form action="/logout" method="post">
             <input type="hidden" name="_csrf" value="" id="csrf-token"/>
             <button type="submit" style="
                 background: none;
@@ -563,23 +564,14 @@
         }
     }
 
-    // Escape key closes any open modal
     document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') {
-            closeModal();
-            closeCreateModal();
-            closeEditModal();
-        }
-    });
-
-    // Escape key closes any open modal
-    document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') {
-            closeModal();
-            closeCreateModal();
-            closeEditModal();
-        }
-    });
+    if (e.key === 'Escape') {
+        closeModal();
+        closeCreateModal();
+        closeEditModal();
+        closeStatsModal();
+    }
+});
 
     // Fetch CSRF token for logout
     async function fetchCsrfToken() {
@@ -588,9 +580,82 @@
         document.getElementById('csrf-token').value = data.token;
     }
 
+    // STATS modal
+    async function openStatsModal() {
+        document.getElementById('stats-modal-overlay').classList.add('active');
+        document.getElementById('stats-content').innerHTML = 
+            '<div class="loading">Loading stats...</div>';
+
+        try {
+            const response = await fetch('/api/stats');
+            const stats = await response.json();
+
+            document.getElementById('stats-content').innerHTML = `
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px;">
+                    <div style="background:rgb(10,45,30); padding:20px; border-radius:8px; text-align:center;">
+                        <div style="font-size:2rem; font-weight:bold; color:rgb(240,230,210);">${stats.totalNotes}</div>
+                        <div style="color:rgb(120,140,100); font-size:0.85rem;">Total Notes</div>
+                    </div>
+                    <div style="background:rgb(10,45,30); padding:20px; border-radius:8px; text-align:center;">
+                        <div style="font-size:2rem; font-weight:bold; color:rgb(240,230,210);">${stats.totalTags}</div>
+                        <div style="color:rgb(120,140,100); font-size:0.85rem;">Unique Tags</div>
+                    </div>
+                    <div style="background:rgb(10,45,30); padding:20px; border-radius:8px; text-align:center;">
+                        <div style="font-size:2rem; font-weight:bold; color:rgb(240,230,210);">${stats.totalWords}</div>
+                        <div style="color:rgb(120,140,100); font-size:0.85rem;">Total Words</div>
+                    </div>
+                    <div style="background:rgb(10,45,30); padding:20px; border-radius:8px; text-align:center;">
+                        <div style="font-size:2rem; font-weight:bold; color:rgb(240,230,210);">${stats.avgWordsPerNote}</div>
+                        <div style="color:rgb(120,140,100); font-size:0.85rem;">Avg Words/Note</div>
+                    </div>
+                </div>
+
+                ${stats.topTags && stats.topTags.length > 0 ? `
+                    <div style="background:rgb(10,45,30); padding:20px; border-radius:8px; margin-bottom:16px;">
+                        <div style="color:rgb(240,230,210); font-weight:600; margin-bottom:12px;">Top Tags</div>
+                        ${stats.topTags.map(t => `
+                            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                                <span class="tag">${t.tag}</span>
+                                <span style="color:rgb(120,140,100); font-size:0.85rem;">${t.count} note${t.count > 1 ? 's' : ''}</span>
+                            </div>
+                        `).join('')}
+                    </div>
+                ` : ''}
+
+                <div style="background:rgb(10,45,30); padding:20px; border-radius:8px;">
+                    <div style="color:rgb(240,230,210); font-weight:600; margin-bottom:12px;">Notes</div>
+                    <div style="color:rgb(120,140,100); font-size:0.85rem; margin-bottom:6px;">
+                        Newest: <span style="color:rgb(240,230,210);">${stats.newestNote || 'N/A'}</span>
+                    </div>
+                    <div style="color:rgb(120,140,100); font-size:0.85rem;">
+                        Oldest: <span style="color:rgb(240,230,210);">${stats.oldestNote || 'N/A'}</span>
+                    </div>
+                </div>
+            `;
+        } catch (err) {
+            document.getElementById('stats-content').innerHTML =
+                '<div class="empty">Could not load stats.</div>';
+        }
+    }
+
+    function closeStatsModal(event) {
+        if (!event || event.target === document.getElementById('stats-modal-overlay')) {
+            document.getElementById('stats-modal-overlay').classList.remove('active');
+        }
+    }
+
     fetchCsrfToken();
     loadNotes();
 </script>
-
+    <!-- Stats Modal -->
+    <div class="modal-overlay" id="stats-modal-overlay" onclick="closeStatsModal(event)">
+        <div class="modal">
+            <button class="close-btn" onclick="closeStatsModal()">✕</button>
+            <h2>📊 Notes Statistics</h2>
+            <div id="stats-content" style="margin-top:15px;">
+                <div class="loading">Loading stats...</div>
+            </div>
+        </div>
+    </div>
 </body>
 </html>
