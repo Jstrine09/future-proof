@@ -2,10 +2,13 @@ import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
 import java.util.HashMap;
+import java.util.HashSet;
 import java.util.List;
 import java.util.Map;
 import java.util.Scanner;
+import java.util.Set;
 import java.util.stream.Stream;
+
 
 public class JumzysNotes {
 
@@ -464,7 +467,8 @@ public class JumzysNotes {
             System.out.println("4. Edit a note");
             System.out.println("5. Delete a note");
             System.out.println("6. Search notes");
-            System.out.println("7. Help");
+            System.out.println("7. Stats");
+            System.out.println("8. Help");
             System.out.println("0. Quit");
             System.out.println();
             System.out.print("Enter your choice: ");
@@ -499,6 +503,9 @@ public class JumzysNotes {
                     searchNotes(notesDir, keyword);
                     break;
                 case "7":
+                    showStats(notesDir);
+                    break;
+                case "8":
                     showHelp();
                     break;
                 case "0":
@@ -508,6 +515,82 @@ public class JumzysNotes {
                     System.out.println("Invalid choice. Please enter a number 0-7.");
             }
         }
+    }
+
+    /**
+     * Display statistics about the notes collection.
+     */
+    private static boolean showStats(Path notesDir) {
+        Path notesSubdir = notesDir.resolve("notes");
+        Path searchDir = Files.exists(notesSubdir) ? notesSubdir : notesDir;
+
+        if (!Files.exists(searchDir)) {
+            System.err.println("Error: Notes directory does not exist: " + searchDir);
+            return false;
+        }
+
+        List<Path> noteFiles;
+        try (Stream<Path> paths = Files.walk(searchDir, 1)) {
+            noteFiles = paths
+                    .filter(Files::isRegularFile)
+                    .filter(p -> {
+                        String name = p.getFileName().toString();
+                        return name.endsWith(".md") || name.endsWith(".note") || name.endsWith(".txt");
+                    })
+                    .toList();
+        } catch (IOException e) {
+            System.err.println("Error reading notes directory: " + e.getMessage());
+            return false;
+        }
+
+        int totalNotes = noteFiles.size();
+        int totalWords = 0;
+        Set<String> uniqueTags = new HashSet<>();
+
+        for (Path noteFile : noteFiles) {
+            try {
+                String content = Files.readString(noteFile);
+
+                // Count words in content only (skip YAML header)
+                String[] parts = content.split("---", 3);
+                String body = parts.length >= 3 ? parts[2] : content;
+                String[] words = body.trim().split("\\s+");
+                if (!body.trim().isEmpty()) {
+                    totalWords += words.length;
+                }
+
+                // Collect tags
+                Map<String, String> metadata = parseYamlHeader(noteFile);
+                String tags = metadata.getOrDefault("tags", "");
+                if (!tags.isEmpty()) {
+                    String cleanTags = tags.replaceAll("[\\[\\]]", "");
+                    for (String tag : cleanTags.split(",")) {
+                        String t = tag.trim();
+                        if (!t.isEmpty()) {
+                            uniqueTags.add(t.toLowerCase());
+                        }
+                    }
+                }
+
+            } catch (IOException e) {
+                System.err.println("Warning: Could not read " + noteFile.getFileName());
+            }
+        }
+
+        int avgWords = totalNotes > 0 ? totalWords / totalNotes : 0;
+
+        System.out.println("=".repeat(40));
+        System.out.println("        JumzysNotes Statistics");
+        System.out.println("=".repeat(40));
+        System.out.println("  Total notes:       " + totalNotes);
+        System.out.println("  Total words:       " + totalWords);
+        System.out.println("  Avg words/note:    " + avgWords);
+        System.out.println("  Unique tags:       " + uniqueTags.size());
+        if (!uniqueTags.isEmpty()) {
+            System.out.println("  Tags: " + String.join(", ", uniqueTags));
+        }
+        System.out.println("=".repeat(40));
+        return true;
     }
 
     /**
@@ -527,7 +610,8 @@ public class JumzysNotes {
                 edit <filename>     - Edit a note
                 delete <filename>       - Delete a note
                 search <keyword>        - Search notes by keyword in title, tags, or content
-
+                stats                   - Show statistics about your notes
+                
                 Examples:
                 java JumzysNotes list
                 java JumzysNotes read sample-note-1.md
@@ -617,6 +701,10 @@ public class JumzysNotes {
                 }
                 boolean searchSuccess = searchNotes(notesDir, args[1]);
                 finish(searchSuccess ? 0 : 1);
+                break;
+            case "stats":
+                boolean statsSuccess = showStats(notesDir);
+                finish(statsSuccess ? 0 : 1);
                 break;
             default:
                 System.err.println("Error: Unknown command '" + command + "'");
