@@ -281,7 +281,20 @@
 <header>
     <h1>📝 JumzysNotes</h1>
     <p>Your personal notes manager</p>
-    <button class="btn-new" onclick="openCreateModal()">+ New Note</button>
+    <div style="display:flex; gap:10px; align-items:center;">
+        <button class="btn-new" onclick="openCreateModal()">+ New Note</button>
+        <form action="/logout" method="post">
+            <button type="submit" style="
+                background: none;
+                color: rgb(240, 230, 210);
+                border: 1px solid rgb(240, 230, 210);
+                padding: 10px 20px;
+                border-radius: 8px;
+                font-size: 1rem;
+                cursor: pointer;
+            ">Logout</button>
+        </form>
+    </div>
 </header>
 
 <div class="container">
