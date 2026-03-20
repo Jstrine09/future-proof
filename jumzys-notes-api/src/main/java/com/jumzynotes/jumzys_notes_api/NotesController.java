@@ -189,13 +189,14 @@ public class NotesController {
     }
 
     /**
-     * GET /api/health - Health check
+     * GET /api/csrf - Get CSRF token for logout form
      */
-    @GetMapping("/health")
-    public Map<String, String> health() {
-        Map<String, String> status = new HashMap<>();
-        status.put("status", "ok");
-        status.put("notesDir", NOTES_DIR.toString());
-        return status;
+    @GetMapping("/csrf")
+    public Map<String, String> getCsrf(jakarta.servlet.http.HttpServletRequest request) {
+        var csrf = (org.springframework.security.web.csrf.CsrfToken) 
+            request.getAttribute(org.springframework.security.web.csrf.CsrfToken.class.getName());
+        Map<String, String> token = new HashMap<>();
+        token.put("token", csrf != null ? csrf.getToken() : "");
+        return token;
     }
 }

@@ -284,6 +284,7 @@
     <div style="display:flex; gap:10px; align-items:center;">
         <button class="btn-new" onclick="openCreateModal()">+ New Note</button>
         <form action="/logout" method="post">
+            <input type="hidden" name="_csrf" value="" id="csrf-token"/>
             <button type="submit" style="
                 background: none;
                 color: rgb(240, 230, 210);
@@ -357,6 +358,13 @@
 <script>
     let allNotes = [];
     let editingFilename = null;
+
+    // Fetch CSRF token for logout
+    async function fetchCsrfToken() {
+        const response = await fetch('/api/csrf');
+        const data = await response.json();
+        document.getElementById('csrf-token').value = data.token;
+    }
 
     // Parse YAML header from note content
     function parseNote(filename, rawContent) {
@@ -564,6 +572,23 @@
         }
     });
 
+    // Escape key closes any open modal
+    document.addEventListener('keydown', e => {
+        if (e.key === 'Escape') {
+            closeModal();
+            closeCreateModal();
+            closeEditModal();
+        }
+    });
+
+    // Fetch CSRF token for logout
+    async function fetchCsrfToken() {
+        const response = await fetch('/api/csrf');
+        const data = await response.json();
+        document.getElementById('csrf-token').value = data.token;
+    }
+
+    fetchCsrfToken();
     loadNotes();
 </script>
 

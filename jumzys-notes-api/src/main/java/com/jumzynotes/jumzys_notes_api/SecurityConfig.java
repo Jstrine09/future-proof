@@ -29,7 +29,9 @@ public class SecurityConfig {
                 .permitAll()
             )
             .logout(logout -> logout
-                .logoutSuccessUrl("/login")
+                .logoutSuccessUrl("/login?logout")
+                .invalidateHttpSession(true)
+                .deleteCookies("JSESSIONID")
                 .permitAll()
             )
             .csrf(csrf -> csrf
@@ -46,7 +48,7 @@ public class SecurityConfig {
     public InMemoryUserDetailsManager userDetailsService() {
         UserDetails user = User.builder()
             .username("james")
-            .password(passwordEncoder().encode("soccer910"))
+            .password(passwordEncoder().encode("Soccer9"))
             .roles("USER")
             .build();
         return new InMemoryUserDetailsManager(user);
