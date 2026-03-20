@@ -376,8 +376,32 @@
         <button class="close-btn" onclick="closeUploadModal()">✕</button>
         <h2>Upload Dataset</h2>
         <input id="upload-title" placeholder="Dataset title" />
-        <input id="upload-filename" placeholder="Filename (e.g. sales.csv or data.json)" />
-        <textarea id="upload-content" placeholder="Paste your CSV or JSON content here..." rows="10"></textarea>
+        <input id="upload-filename" placeholder="Filename (auto-filled on drop)" />
+        
+        <!-- Drop zone -->
+        <div id="drop-zone" style="
+            border: 2px dashed rgb(120, 140, 100);
+            border-radius: 8px;
+            padding: 40px;
+            text-align: center;
+            color: rgb(120, 140, 100);
+            margin-bottom: 10px;
+            cursor: pointer;
+            transition: border-color 0.2s, background 0.2s;
+        "
+            ondragover="handleDragOver(event)"
+            ondragleave="handleDragLeave(event)"
+            ondrop="handleDrop(event)"
+            onclick="document.getElementById('file-input').click()"
+        >
+            <div style="font-size:2rem; margin-bottom:10px;">📂</div>
+            <div>Drop a CSV or JSON file here</div>
+            <div style="font-size:0.8rem; margin-top:5px;">or click to browse</div>
+            <input type="file" id="file-input" accept=".csv,.json" 
+                style="display:none;" onchange="handleFileSelect(event)">
+        </div>
+
+        <textarea id="upload-content" placeholder="File content will appear here, or paste manually..." rows="8"></textarea>
         <button class="btn-save" onclick="submitUpload()">Upload Dataset</button>
     </div>
 </div>
@@ -700,6 +724,13 @@
         document.getElementById('upload-title').value = '';
         document.getElementById('upload-filename').value = '';
         document.getElementById('upload-content').value = '';
+        document.getElementById('drop-zone').innerHTML = `
+            <div style="font-size:2rem; margin-bottom:10px;">📂</div>
+            <div>Drop a CSV or JSON file here</div>
+            <div style="font-size:0.8rem; margin-top:5px;">or click to browse</div>
+            <input type="file" id="file-input" accept=".csv,.json" 
+                style="display:none;" onchange="handleFileSelect(event)">
+        `;
         document.getElementById('upload-modal-overlay').classList.add('active');
     }
 
@@ -813,6 +844,65 @@
         const response = await fetch('/api/csrf');
         const data = await response.json();
         document.getElementById('csrf-token').value = data.token;
+    }
+
+    // DRAG AND DROP
+    function handleDragOver(event) {
+        event.preventDefault();
+        const zone = document.getElementById('drop-zone');
+        zone.style.borderColor = 'rgb(240, 230, 210)';
+        zone.style.background = 'rgb(10, 45, 30)';
+    }
+
+    function handleDragLeave(event) {
+        const zone = document.getElementById('drop-zone');
+        zone.style.borderColor = 'rgb(120, 140, 100)';
+        zone.style.background = 'none';
+    }
+
+    function handleDrop(event) {
+        event.preventDefault();
+        handleDragLeave(event);
+
+        const file = event.dataTransfer.files[0];
+        if (file) {
+            readFile(file);
+        }
+    }
+
+    function handleFileSelect(event) {
+        const file = event.target.files[0];
+        if (file) {
+            readFile(file);
+        }
+    }
+
+    function readFile(file) {
+        // Validate file type
+        if (!file.name.endsWith('.csv') && !file.name.endsWith('.json')) {
+            alert('Only CSV and JSON files are supported.');
+            return;
+        }
+
+        // Auto-fill filename and title
+        document.getElementById('upload-filename').value = file.name;
+        document.getElementById('upload-title').value = file.name.replace(/\.[^/.]+$/, '');
+
+        // Update drop zone to show filename
+        document.getElementById('drop-zone').innerHTML = `
+            <div style="font-size:2rem; margin-bottom:10px;">✅</div>
+            <div style="color:rgb(240,230,210);">${file.name}</div>
+            <div style="font-size:0.8rem; margin-top:5px; color:rgb(120,140,100);">
+                ${Math.round(file.size / 1024 * 10) / 10} KB
+            </div>
+        `;
+
+        // Read file content
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            document.getElementById('upload-content').value = e.target.result;
+        };
+        reader.readAsText(file);
     }
 
     fetchCsrfToken();
