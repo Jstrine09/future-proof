@@ -29,10 +29,13 @@ import org.springframework.web.multipart.MultipartFile;
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
 
+import io.swagger.v3.oas.annotations.Operation;
+import io.swagger.v3.oas.annotations.tags.Tag;
 import jakarta.annotation.PostConstruct;
 
 @RestController
 @RequestMapping("/api")
+@Tag(name = "JumzysNotes API", description = "Personal notes and dataset management")
 public class NotesController {
 
     private static final Path NOTES_DIR = Path.of(
@@ -54,9 +57,7 @@ public class NotesController {
         Files.createDirectories(MEDIA_DIR);
     }
 
-    /**
-     * GET /api/notes - List all notes
-     */
+    @Operation(summary = "List all notes")
     @GetMapping("/notes")
     public List<Map<String, String>> listNotes() throws IOException {
         if (!Files.exists(NOTES_DIR)) return List.of();
@@ -77,9 +78,7 @@ public class NotesController {
         }
     }
 
-    /**
-     * GET /api/notes/{filename} - Get a specific note
-     */
+    @Operation(summary = "Get a specific note by filename")
     @GetMapping("/notes/{filename}")
     public Map<String, String> getNote(@PathVariable String filename) throws IOException {
         Path notePath = NOTES_DIR.resolve(filename);
@@ -91,9 +90,7 @@ public class NotesController {
         return note;
     }
 
-    /**
-     * POST /api/notes - Create a new note
-     */
+    @Operation(summary = "Create a new note")
     @PostMapping("/notes")
     public ResponseEntity<Map<String, String>> createNote(@RequestBody Map<String, String> body) {
         String title = body.getOrDefault("title", "").trim();
@@ -132,9 +129,7 @@ public class NotesController {
         }
     }
 
-    /**
-     * PUT /api/notes/{filename} - Update a note
-     */
+    @Operation(summary = "Update an existing note")
     @PutMapping("/notes/{filename}")
     public ResponseEntity<Map<String, String>> updateNote(
             @PathVariable String filename,
@@ -177,9 +172,7 @@ public class NotesController {
         }
     }
 
-    /**
-     * DELETE /api/notes/{filename} - Delete a note
-     */
+    @Operation(summary = "Delete a note")
     @DeleteMapping("/notes/{filename}")
     public ResponseEntity<Map<String, String>> deleteNote(@PathVariable String filename) {
         Path notePath = NOTES_DIR.resolve(filename);
@@ -193,9 +186,7 @@ public class NotesController {
         }
     }
 
-    /**
-     * GET /api/datasets - List all datasets
-     */
+    @Operation(summary = "List all datasets")
     @GetMapping("/datasets")
     public List<Map<String, String>> listDatasets() throws IOException {
         if (!Files.exists(DATASETS_DIR)) return List.of();
@@ -221,9 +212,7 @@ public class NotesController {
         }
     }
 
-    /**
-     * POST /api/datasets - Upload and validate a small dataset
-     */
+    @Operation(summary = "Upload and validate a small dataset")
     @PostMapping("/datasets")
     public ResponseEntity<Map<String, Object>> uploadDataset(
             @RequestBody Map<String, String> body) throws IOException {
@@ -283,9 +272,7 @@ public class NotesController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * POST /api/datasets/upload - Stream upload a large dataset
-     */
+    @Operation(summary = "Stream upload a large dataset file")
     @PostMapping("/datasets/upload")
     public ResponseEntity<Map<String, Object>> streamUploadDataset(
             @RequestParam("file") MultipartFile file,
@@ -349,9 +336,6 @@ public class NotesController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * Validate CSV content
-     */
     private Map<String, Object> validateCSV(String content) {
         Map<String, Object> result = new HashMap<>();
         List<String> errors = new ArrayList<>();
@@ -393,9 +377,6 @@ public class NotesController {
         return result;
     }
 
-    /**
-     * Validate JSON content
-     */
     private Map<String, Object> validateJSON(String content) {
         Map<String, Object> result = new HashMap<>();
         List<String> errors = new ArrayList<>();
@@ -430,9 +411,7 @@ public class NotesController {
         return result;
     }
 
-    /**
-     * GET /api/datasets/{filename}/preview - Preview first 5 rows
-     */
+    @Operation(summary = "Preview first 5 rows of a dataset")
     @GetMapping("/datasets/{filename}/preview")
     public ResponseEntity<Map<String, Object>> previewDataset(
             @PathVariable String filename) throws IOException {
@@ -459,9 +438,7 @@ public class NotesController {
         return ResponseEntity.ok(preview);
     }
 
-    /**
-     * GET /api/datasets/{filename}/full - Get full dataset
-     */
+    @Operation(summary = "Get full dataset content")
     @GetMapping("/datasets/{filename}/full")
     public ResponseEntity<Map<String, Object>> fullDataset(
             @PathVariable String filename) throws IOException {
@@ -488,8 +465,117 @@ public class NotesController {
     }
 
     /**
-     * DELETE /api/datasets/{filename} - Delete a dataset and sidecar
+     * GET /api/datasets/{filename}/profile - Column stats, inferred types, null counts
      */
+    @Operation(summary = "Profile a dataset - column stats, types, null counts")
+    @GetMapping(value = "/datasets/{filename}/profile", produces = "application/json")
+    public ResponseEntity<Map<String, Object>> profileDataset(
+            @PathVariable String filename) throws IOException {
+
+        Path datasetPath = DATASETS_DIR.resolve(filename);
+        if (!Files.exists(datasetPath)) return ResponseEntity.notFound().build();
+
+        Map<String, Object> profile = new HashMap<>();
+        profile.put("filename", filename);
+
+        if (filename.endsWith(".csv")) {
+            List<String> lines = Files.readAllLines(datasetPath);
+
+            if (lines.isEmpty()) {
+                profile.put("error", "File is empty");
+                return ResponseEntity.ok(profile);
+            }
+
+            String[] headers = lines.get(0).split(",");
+            int totalRows = lines.size() - 1;
+            int totalCols = headers.length;
+
+            // Initialize column stats
+            Map<String, Map<String, Object>> columnStats = new HashMap<>();
+            for (String header : headers) {
+                Map<String, Object> stats = new HashMap<>();
+                stats.put("name", header.trim());
+                stats.put("nullCount", 0);
+                stats.put("uniqueValues", new java.util.HashSet<String>());
+                stats.put("numericValues", new ArrayList<Double>());
+                columnStats.put(header.trim(), stats);
+            }
+
+            // Analyze each row
+            for (int i = 1; i < lines.size(); i++) {
+                String[] cols = lines.get(i).split(",", -1);
+                for (int j = 0; j < headers.length; j++) {
+                    String header = headers[j].trim();
+                    String value = j < cols.length ? cols[j].trim() : "";
+                    Map<String, Object> stats = columnStats.get(header);
+
+                    if (value.isEmpty()) {
+                        stats.put("nullCount", (int) stats.get("nullCount") + 1);
+                    } else {
+                        ((java.util.Set<String>) stats.get("uniqueValues")).add(value);
+                        try {
+                            double num = Double.parseDouble(value);
+                            ((List<Double>) stats.get("numericValues")).add(num);
+                        } catch (NumberFormatException ignored) {}
+                    }
+                }
+            }
+
+            // Build final column profiles
+            List<Map<String, Object>> columns = new ArrayList<>();
+            for (String header : headers) {
+                String h = header.trim();
+                Map<String, Object> stats = columnStats.get(h);
+                Map<String, Object> col = new HashMap<>();
+
+                int nullCount = (int) stats.get("nullCount");
+                java.util.Set<String> uniqueVals = (java.util.Set<String>) stats.get("uniqueValues");
+                List<Double> numericVals = (List<Double>) stats.get("numericValues");
+
+                col.put("name", h);
+                col.put("nullCount", nullCount);
+                col.put("uniqueCount", uniqueVals.size());
+                col.put("fillRate", Math.round((1.0 - (double) nullCount / totalRows) * 100) + "%");
+
+                // Infer type
+                if (numericVals.size() == totalRows - nullCount && !numericVals.isEmpty()) {
+                    col.put("inferredType", "number");
+                    double sum = numericVals.stream().mapToDouble(Double::doubleValue).sum();
+                    double min = numericVals.stream().mapToDouble(Double::doubleValue).min().orElse(0);
+                    double max = numericVals.stream().mapToDouble(Double::doubleValue).max().orElse(0);
+                    double avg = sum / numericVals.size();
+                    col.put("min", Math.round(min * 100.0) / 100.0);
+                    col.put("max", Math.round(max * 100.0) / 100.0);
+                    col.put("avg", Math.round(avg * 100.0) / 100.0);
+                } else {
+                    // Check if it looks like a date
+                    boolean looksLikeDate = uniqueVals.stream().limit(5)
+                        .anyMatch(v -> v.matches("\\d{4}-\\d{2}-\\d{2}.*") ||
+                                    v.matches("\\d{2}/\\d{2}/\\d{4}"));
+                    col.put("inferredType", looksLikeDate ? "date" : "string");
+                    col.put("sampleValues", uniqueVals.stream().limit(3).collect(Collectors.toList()));
+                }
+
+                columns.add(col);
+            }
+
+            profile.put("totalRows", totalRows);
+            profile.put("totalColumns", totalCols);
+            profile.put("columns", columns);
+            profile.put("completeness", Math.round(
+                columns.stream()
+                    .mapToDouble(c -> Double.parseDouble(
+                        ((String) c.get("fillRate")).replace("%", "")))
+                    .average().orElse(0)) + "%");
+
+        } else {
+            profile.put("message", "Profiling only supported for CSV files");
+        }
+
+        return ResponseEntity.ok(profile);
+    }
+
+    @Operation(summary = "Delete a dataset and its sidecar")
     @DeleteMapping("/datasets/{filename}")
     public ResponseEntity<Map<String, String>> deleteDataset(
             @PathVariable String filename) throws IOException {
@@ -504,9 +590,7 @@ public class NotesController {
         return ResponseEntity.ok(Map.of("filename", filename, "status", "deleted"));
     }
 
-    /**
-     * POST /api/media/{noteId} - Upload media for a note
-     */
+    @Operation(summary = "Upload media for a note")
     @PostMapping("/media/{noteId}")
     public ResponseEntity<Map<String, Object>> uploadMedia(
             @PathVariable String noteId,
@@ -545,9 +629,7 @@ public class NotesController {
         return ResponseEntity.ok(response);
     }
 
-    /**
-     * GET /api/media/{noteId} - List all media for a note
-     */
+    @Operation(summary = "List all media for a note")
     @GetMapping("/media/{noteId}")
     public List<Map<String, Object>> listMedia(@PathVariable String noteId) throws IOException {
         Path noteMediaDir = MEDIA_DIR.resolve(noteId);
@@ -575,9 +657,7 @@ public class NotesController {
         }
     }
 
-    /**
-     * GET /api/media/{noteId}/{filename} - Serve a media file
-     */
+    @Operation(summary = "Serve a media file")
     @GetMapping("/media/{noteId}/{filename}")
     public ResponseEntity<Resource> serveMedia(
             @PathVariable String noteId,
@@ -595,9 +675,7 @@ public class NotesController {
             .body(resource);
     }
 
-    /**
-     * DELETE /api/media/{noteId}/{filename} - Delete a media file
-     */
+    @Operation(summary = "Delete a media file")
     @DeleteMapping("/media/{noteId}/{filename}")
     public ResponseEntity<Map<String, String>> deleteMedia(
             @PathVariable String noteId,
@@ -610,9 +688,7 @@ public class NotesController {
         return ResponseEntity.ok(Map.of("filename", filename, "status", "deleted"));
     }
 
-    /**
-     * GET /api/search?q=keyword - Search notes by keyword
-     */
+    @Operation(summary = "Search notes by keyword")
     @GetMapping("/search")
     public List<Map<String, Object>> searchNotes(
             @RequestParam("q") String query) throws IOException {
@@ -633,8 +709,6 @@ public class NotesController {
                 String lower = content.toLowerCase();
 
                 if (lower.contains(lowerQuery)) {
-                    // Parse metadata
-                    Map<String, String> meta = new HashMap<>();
                     String title = noteFile.getFileName().toString();
                     String tags = "";
 
@@ -646,7 +720,6 @@ public class NotesController {
                         }
                     }
 
-                    // Find matching excerpt
                     int matchIdx = lower.indexOf(lowerQuery);
                     int start = Math.max(0, matchIdx - 60);
                     int end = Math.min(content.length(), matchIdx + query.length() + 60);
@@ -666,9 +739,7 @@ public class NotesController {
         return results;
     }
 
-    /**
-     * GET /api/stats - Get statistics about notes
-     */
+    @Operation(summary = "Get statistics about notes")
     @GetMapping("/stats")
     public Map<String, Object> getStats() throws IOException {
         if (!Files.exists(NOTES_DIR)) return Map.of("totalNotes", 0);
@@ -730,9 +801,7 @@ public class NotesController {
         return stats;
     }
 
-    /**
-     * GET /api/health - Health check
-     */
+    @Operation(summary = "Health check")
     @GetMapping("/health")
     public Map<String, String> health() {
         Map<String, String> status = new HashMap<>();
@@ -741,9 +810,7 @@ public class NotesController {
         return status;
     }
 
-    /**
-     * GET /api/csrf - Get CSRF token
-     */
+    @Operation(summary = "Get CSRF token")
     @GetMapping("/csrf")
     public Map<String, String> getCsrf(jakarta.servlet.http.HttpServletRequest request) {
         var csrf = (org.springframework.security.web.csrf.CsrfToken)
