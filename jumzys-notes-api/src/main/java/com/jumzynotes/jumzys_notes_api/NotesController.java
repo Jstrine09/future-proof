@@ -3,12 +3,14 @@ package com.jumzynotes.jumzys_notes_api;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
 import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import jakarta.annotation.PostConstruct;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -18,8 +20,8 @@ import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
 import org.springframework.web.bind.annotation.RestController;
-
-import jakarta.annotation.PostConstruct;
+import com.fasterxml.jackson.databind.JsonNode;
+import com.fasterxml.jackson.databind.ObjectMapper;
 
 @RestController
 @RequestMapping("/api")
@@ -38,6 +40,7 @@ public class NotesController {
      */
     @PostConstruct
     public void init() throws IOException {
+        Files.createDirectories(NOTES_DIR);
         Files.createDirectories(DATASETS_DIR);
     }
 
@@ -221,7 +224,6 @@ public class NotesController {
                     Map<String, String> dataset = new HashMap<>();
                     dataset.put("filename", p.getFileName().toString());
                     dataset.put("size", String.valueOf(p.toFile().length()));
-                    // Check for sidecar YAML
                     String sidecar = p.getFileName().toString() + ".dataset.yml";
                     Path sidecarPath = DATASETS_DIR.resolve(sidecar);
                     dataset.put("hasMeta", String.valueOf(Files.exists(sidecarPath)));
@@ -232,10 +234,10 @@ public class NotesController {
     }
 
     /**
-     * POST /api/datasets - Upload a dataset file
+     * POST /api/datasets - Upload and validate a dataset file
      */
     @PostMapping("/datasets")
-    public ResponseEntity<Map<String, String>> uploadDataset(
+    public ResponseEntity<Map<String, Object>> uploadDataset(
             @RequestBody Map<String, String> body) throws IOException {
 
         String filename = body.getOrDefault("filename", "").trim();
@@ -252,19 +254,31 @@ public class NotesController {
                 .body(Map.of("error", "Only CSV and JSON files are supported"));
         }
 
+        // Validate based on file type
+        Map<String, Object> validation;
+        if (filename.endsWith(".csv")) {
+            validation = validateCSV(content);
+        } else {
+            validation = validateJSON(content);
+        }
+
+        // If validation failed return errors
+        if (!(boolean) validation.get("valid")) {
+            Map<String, Object> errorResponse = new HashMap<>();
+            errorResponse.put("error", "Validation failed");
+            errorResponse.put("details", validation.get("errors"));
+            return ResponseEntity.badRequest().body(errorResponse);
+        }
+
         // Save the dataset file
         Path datasetPath = DATASETS_DIR.resolve(filename);
         Files.writeString(datasetPath, content);
 
-        // Count rows for CSV
-        int rowCount = 0;
-        if (filename.endsWith(".csv")) {
-            String[] lines = content.split("\n");
-            rowCount = Math.max(0, lines.length - 1); // subtract header row
-        }
-
         // Create sidecar YAML metadata file
         String nowIso = java.time.Instant.now().toString();
+        int rowCount = (int) validation.get("rowCount");
+        int colCount = (int) validation.get("colCount");
+
         String sidecarContent = String.format("""
                 title: %s
                 filename: %s
@@ -273,6 +287,7 @@ public class NotesController {
                 format: %s
                 size: %d
                 rowCount: %d
+                colCount: %d
                 """,
                 title,
                 filename,
@@ -280,20 +295,123 @@ public class NotesController {
                 nowIso,
                 filename.endsWith(".csv") ? "csv" : "json",
                 content.length(),
-                rowCount);
+                rowCount,
+                colCount);
 
         String sidecarFilename = filename + ".dataset.yml";
         Files.writeString(DATASETS_DIR.resolve(sidecarFilename), sidecarContent);
 
-        return ResponseEntity.ok(Map.of(
-            "filename", filename,
-            "sidecar", sidecarFilename,
-            "status", "uploaded"
-        ));
+        Map<String, Object> response = new HashMap<>();
+        response.put("filename", filename);
+        response.put("sidecar", sidecarFilename);
+        response.put("status", "uploaded");
+        response.put("rowCount", rowCount);
+        response.put("colCount", colCount);
+
+        return ResponseEntity.ok(response);
     }
 
     /**
-     * GET /api/datasets/{filename}/preview - Preview first 5 rows of a dataset
+     * Validate CSV content
+     */
+    private Map<String, Object> validateCSV(String content) {
+        Map<String, Object> result = new HashMap<>();
+        List<String> errors = new ArrayList<>();
+
+        String[] lines = content.split("\n");
+
+        if (lines.length == 0) {
+            errors.add("File is empty");
+            result.put("valid", false);
+            result.put("errors", errors);
+            result.put("rowCount", 0);
+            result.put("colCount", 0);
+            return result;
+        }
+
+        String[] headers = lines[0].split(",");
+        int expectedCols = headers.length;
+
+        if (expectedCols == 0) {
+            errors.add("Header row is empty");
+            result.put("valid", false);
+            result.put("errors", errors);
+            result.put("rowCount", 0);
+            result.put("colCount", 0);
+            return result;
+        }
+
+        int dataRows = 0;
+        for (int i = 1; i < lines.length; i++) {
+            String line = lines[i].trim();
+            if (line.isEmpty()) continue;
+
+            String[] cols = line.split(",");
+            if (cols.length != expectedCols) {
+                errors.add("Row " + (i + 1) + " has " + cols.length +
+                    " columns but header has " + expectedCols);
+            }
+            dataRows++;
+        }
+
+        result.put("valid", errors.isEmpty());
+        result.put("errors", errors);
+        result.put("rowCount", dataRows);
+        result.put("colCount", expectedCols);
+        return result;
+    }
+
+    /**
+     * Validate JSON content
+     */
+    private Map<String, Object> validateJSON(String content) {
+        Map<String, Object> result = new HashMap<>();
+        List<String> errors = new ArrayList<>();
+
+        if (content.trim().isEmpty()) {
+            errors.add("File is empty");
+            result.put("valid", false);
+            result.put("errors", errors);
+            result.put("rowCount", 0);
+            result.put("colCount", 0);
+            return result;
+        }
+
+        try {
+            ObjectMapper mapper = new ObjectMapper();
+            JsonNode node = mapper.readTree(content);
+
+            int rowCount = 0;
+            int colCount = 0;
+
+            if (node.isArray()) {
+                rowCount = node.size();
+                if (rowCount > 0 && node.get(0).isObject()) {
+                    colCount = node.get(0).size();
+                }
+            } else if (node.isObject()) {
+                colCount = node.size();
+                rowCount = 1;
+            }
+
+            result.put("valid", true);
+            result.put("errors", errors);
+            result.put("rowCount", rowCount);
+            result.put("colCount", colCount);
+
+        } catch (Exception e) {
+            errors.add("Invalid JSON: " + e.getMessage());
+            result.put("valid", false);
+            result.put("errors", errors);
+            result.put("rowCount", 0);
+            result.put("colCount", 0);
+        }
+
+        return result;
+    }
+
+    /**
+     * GET /api/datasets/{filename}/preview - Preview first 5 rows
      */
     @GetMapping("/datasets/{filename}/preview")
     public ResponseEntity<Map<String, Object>> previewDataset(
@@ -310,7 +428,7 @@ public class NotesController {
 
         if (filename.endsWith(".csv")) {
             List<String> lines = Files.readAllLines(datasetPath);
-            preview.put("headers", lines.isEmpty() ? List.of() : 
+            preview.put("headers", lines.isEmpty() ? List.of() :
                 List.of(lines.get(0).split(",")));
             preview.put("rows", lines.stream()
                 .skip(1)
@@ -327,8 +445,8 @@ public class NotesController {
     }
 
     /**
- * GET /api/datasets/{filename}/full - Get full dataset content
- */
+     * GET /api/datasets/{filename}/full - Get full dataset content
+     */
     @GetMapping("/datasets/{filename}/full")
     public ResponseEntity<Map<String, Object>> fullDataset(
             @PathVariable String filename) throws IOException {
@@ -372,10 +490,8 @@ public class NotesController {
             return ResponseEntity.notFound().build();
         }
 
-        // Delete the dataset file
         Files.delete(datasetPath);
 
-        // Delete sidecar if it exists
         Path sidecarPath = DATASETS_DIR.resolve(filename + ".dataset.yml");
         if (Files.exists(sidecarPath)) {
             Files.delete(sidecarPath);

@@ -166,7 +166,6 @@
 
         .btn-new:hover { background: rgb(30, 80, 50); }
 
-        /* Modal */
         .modal-overlay {
             display: none;
             position: fixed;
@@ -377,8 +376,7 @@
         <h2>Upload Dataset</h2>
         <input id="upload-title" placeholder="Dataset title" />
         <input id="upload-filename" placeholder="Filename (auto-filled on drop)" />
-        
-        <!-- Drop zone -->
+
         <div id="drop-zone" style="
             border: 2px dashed rgb(120, 140, 100);
             border-radius: 8px;
@@ -397,7 +395,7 @@
             <div style="font-size:2rem; margin-bottom:10px;">📂</div>
             <div>Drop a CSV or JSON file here</div>
             <div style="font-size:0.8rem; margin-top:5px;">or click to browse</div>
-            <input type="file" id="file-input" accept=".csv,.json" 
+            <input type="file" id="file-input" accept=".csv,.json"
                 style="display:none;" onchange="handleFileSelect(event)">
         </div>
 
@@ -610,7 +608,7 @@
         }
     }
 
-    // DELETE
+    // DELETE note
     async function confirmDelete(index) {
         const note = allNotes[index];
         if (!confirm(`Delete "${note.title}"?`)) return;
@@ -641,72 +639,22 @@
             }
 
             grid.innerHTML = datasets.map(d => `
-            <div class="note-card" style="margin-bottom:16px;">
-                <div class="note-title" onclick="window.location.href='/dataset.html?file=${d.filename}'" 
-                    style="cursor:pointer;">
-                    📄 ${d.filename}
+                <div class="note-card" style="margin-bottom:16px;">
+                    <div class="note-title" onclick="window.location.href='/dataset.html?file=${d.filename}'"
+                        style="cursor:pointer;">
+                        📄 ${d.filename}
+                    </div>
+                    <div class="note-meta">Size: ${Math.round(d.size / 1024 * 10) / 10} KB</div>
+                    <div class="note-actions" style="margin-top:12px;">
+                        <button class="btn-edit" onclick="window.location.href='/dataset.html?file=${d.filename}'">
+                            👁️ View Full
+                        </button>
+                        <button class="btn-delete" onclick="confirmDeleteDataset('${d.filename}')">🗑️ Delete</button>
+                    </div>
                 </div>
-                <div class="note-meta">Size: ${Math.round(d.size / 1024 * 10) / 10} KB</div>
-                <div class="note-actions" style="margin-top:12px;">
-                    <button class="btn-edit" onclick="window.location.href='/dataset.html?file=${d.filename}'">
-                        👁️ View Full
-                    </button>
-                    <button class="btn-delete" onclick="confirmDeleteDataset('${d.filename}')">🗑️ Delete</button>
-                </div>
-            </div>
-        `).join('');
+            `).join('');
         } catch (err) {
             grid.innerHTML = '<div class="empty">Could not load datasets.</div>';
-        }
-    }
-
-    async function previewDataset(filename) {
-        try {
-            const response = await fetch(`/api/datasets/${filename}/preview`);
-            const data = await response.json();
-
-            let previewHtml = `<h2>👁️ Preview: ${filename}</h2>`;
-
-            if (data.headers) {
-                previewHtml += `
-                    <div style="overflow-x:auto; margin-top:15px;">
-                        <table style="width:100%; border-collapse:collapse; font-size:0.85rem;">
-                            <thead>
-                                <tr>
-                                    ${data.headers.map(h => `
-                                        <th style="padding:8px; background:rgb(10,45,30);
-                                            color:rgb(240,230,210); text-align:left;
-                                            border:1px solid rgb(120,140,100);">${h}</th>
-                                    `).join('')}
-                                </tr>
-                            </thead>
-                            <tbody>
-                                ${data.rows.map(row => `
-                                    <tr>
-                                        ${row.map(cell => `
-                                            <td style="padding:8px; border:1px solid rgb(120,140,100);
-                                                color:#ccc;">${cell}</td>
-                                        `).join('')}
-                                    </tr>
-                                `).join('')}
-                            </tbody>
-                        </table>
-                        <div style="color:rgb(120,140,100); font-size:0.8rem; margin-top:8px;">
-                            Showing first 5 of ${data.totalRows} rows
-                        </div>
-                    </div>
-                `;
-            } else {
-                previewHtml += `<pre style="margin-top:15px; color:#ccc;">${data.content}</pre>`;
-            }
-
-            document.getElementById('modal-title').innerHTML = '';
-            document.getElementById('modal-meta').innerHTML = '';
-            document.getElementById('modal-content').innerHTML = previewHtml;
-            document.getElementById('modal-overlay').classList.add('active');
-
-        } catch (err) {
-            alert('Could not load preview.');
         }
     }
 
@@ -733,7 +681,7 @@
             <div style="font-size:2rem; margin-bottom:10px;">📂</div>
             <div>Drop a CSV or JSON file here</div>
             <div style="font-size:0.8rem; margin-top:5px;">or click to browse</div>
-            <input type="file" id="file-input" accept=".csv,.json" 
+            <input type="file" id="file-input" accept=".csv,.json"
                 style="display:none;" onchange="handleFileSelect(event)">
         `;
         document.getElementById('upload-modal-overlay').classList.add('active');
@@ -761,12 +709,69 @@
             body: JSON.stringify({ title, filename, content })
         });
 
+        const data = await response.json();
+
         if (response.ok) {
             closeUploadModal();
             loadDatasets();
+            alert(`✅ Uploaded successfully!\n${data.rowCount} rows × ${data.colCount} columns`);
         } else {
-            alert('Error uploading dataset.');
+            if (data.details && data.details.length > 0) {
+                alert('❌ Validation failed:\n\n' + data.details.join('\n'));
+            } else {
+                alert('❌ Error: ' + (data.error || 'Upload failed'));
+            }
         }
+    }
+
+    // DRAG AND DROP
+    function handleDragOver(event) {
+        event.preventDefault();
+        const zone = document.getElementById('drop-zone');
+        zone.style.borderColor = 'rgb(240, 230, 210)';
+        zone.style.background = 'rgb(10, 45, 30)';
+    }
+
+    function handleDragLeave(event) {
+        const zone = document.getElementById('drop-zone');
+        zone.style.borderColor = 'rgb(120, 140, 100)';
+        zone.style.background = 'none';
+    }
+
+    function handleDrop(event) {
+        event.preventDefault();
+        handleDragLeave(event);
+        const file = event.dataTransfer.files[0];
+        if (file) readFile(file);
+    }
+
+    function handleFileSelect(event) {
+        const file = event.target.files[0];
+        if (file) readFile(file);
+    }
+
+    function readFile(file) {
+        if (!file.name.endsWith('.csv') && !file.name.endsWith('.json')) {
+            alert('Only CSV and JSON files are supported.');
+            return;
+        }
+
+        document.getElementById('upload-filename').value = file.name;
+        document.getElementById('upload-title').value = file.name.replace(/\.[^/.]+$/, '');
+
+        document.getElementById('drop-zone').innerHTML = `
+            <div style="font-size:2rem; margin-bottom:10px;">✅</div>
+            <div style="color:rgb(240,230,210);">${file.name}</div>
+            <div style="font-size:0.8rem; margin-top:5px; color:rgb(120,140,100);">
+                ${Math.round(file.size / 1024 * 10) / 10} KB
+            </div>
+        `;
+
+        const reader = new FileReader();
+        reader.onload = (e) => {
+            document.getElementById('upload-content').value = e.target.result;
+        };
+        reader.readAsText(file);
     }
 
     // STATS modal
@@ -849,65 +854,6 @@
         const response = await fetch('/api/csrf');
         const data = await response.json();
         document.getElementById('csrf-token').value = data.token;
-    }
-
-    // DRAG AND DROP
-    function handleDragOver(event) {
-        event.preventDefault();
-        const zone = document.getElementById('drop-zone');
-        zone.style.borderColor = 'rgb(240, 230, 210)';
-        zone.style.background = 'rgb(10, 45, 30)';
-    }
-
-    function handleDragLeave(event) {
-        const zone = document.getElementById('drop-zone');
-        zone.style.borderColor = 'rgb(120, 140, 100)';
-        zone.style.background = 'none';
-    }
-
-    function handleDrop(event) {
-        event.preventDefault();
-        handleDragLeave(event);
-
-        const file = event.dataTransfer.files[0];
-        if (file) {
-            readFile(file);
-        }
-    }
-
-    function handleFileSelect(event) {
-        const file = event.target.files[0];
-        if (file) {
-            readFile(file);
-        }
-    }
-
-    function readFile(file) {
-        // Validate file type
-        if (!file.name.endsWith('.csv') && !file.name.endsWith('.json')) {
-            alert('Only CSV and JSON files are supported.');
-            return;
-        }
-
-        // Auto-fill filename and title
-        document.getElementById('upload-filename').value = file.name;
-        document.getElementById('upload-title').value = file.name.replace(/\.[^/.]+$/, '');
-
-        // Update drop zone to show filename
-        document.getElementById('drop-zone').innerHTML = `
-            <div style="font-size:2rem; margin-bottom:10px;">✅</div>
-            <div style="color:rgb(240,230,210);">${file.name}</div>
-            <div style="font-size:0.8rem; margin-top:5px; color:rgb(120,140,100);">
-                ${Math.round(file.size / 1024 * 10) / 10} KB
-            </div>
-        `;
-
-        // Read file content
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            document.getElementById('upload-content').value = e.target.result;
-        };
-        reader.readAsText(file);
     }
 
     fetchCsrfToken();
