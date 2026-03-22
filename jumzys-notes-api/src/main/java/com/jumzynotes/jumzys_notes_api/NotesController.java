@@ -11,6 +11,9 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
+import org.springframework.core.io.Resource;
+import org.springframework.core.io.UrlResource;
+import org.springframework.http.MediaType;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -40,13 +43,15 @@ public class NotesController {
         System.getProperty("user.home"), ".notes", "datasets"
     );
 
-    /**
-     * Create necessary directories on startup.
-     */
+    private static final Path MEDIA_DIR = Path.of(
+        System.getProperty("user.home"), ".notes", "media"
+    );
+
     @PostConstruct
     public void init() throws IOException {
         Files.createDirectories(NOTES_DIR);
         Files.createDirectories(DATASETS_DIR);
+        Files.createDirectories(MEDIA_DIR);
     }
 
     /**
@@ -54,9 +59,7 @@ public class NotesController {
      */
     @GetMapping("/notes")
     public List<Map<String, String>> listNotes() throws IOException {
-        if (!Files.exists(NOTES_DIR)) {
-            return List.of();
-        }
+        if (!Files.exists(NOTES_DIR)) return List.of();
 
         try (Stream<Path> paths = Files.walk(NOTES_DIR, 1)) {
             return paths
@@ -66,11 +69,8 @@ public class NotesController {
                 .map(p -> {
                     Map<String, String> note = new HashMap<>();
                     note.put("filename", p.getFileName().toString());
-                    try {
-                        note.put("content", Files.readString(p));
-                    } catch (IOException e) {
-                        note.put("content", "");
-                    }
+                    try { note.put("content", Files.readString(p)); }
+                    catch (IOException e) { note.put("content", ""); }
                     return note;
                 })
                 .collect(Collectors.toList());
@@ -83,10 +83,7 @@ public class NotesController {
     @GetMapping("/notes/{filename}")
     public Map<String, String> getNote(@PathVariable String filename) throws IOException {
         Path notePath = NOTES_DIR.resolve(filename);
-
-        if (!Files.exists(notePath)) {
-            throw new RuntimeException("Note not found: " + filename);
-        }
+        if (!Files.exists(notePath)) throw new RuntimeException("Note not found: " + filename);
 
         Map<String, String> note = new HashMap<>();
         note.put("filename", filename);
@@ -122,9 +119,7 @@ public class NotesController {
         fileContent.append("title: ").append(title).append("\n");
         fileContent.append("created: ").append(nowIso).append("\n");
         fileContent.append("modified: ").append(nowIso).append("\n");
-        if (!tags.isEmpty()) {
-            fileContent.append("tags: [").append(tags).append("]\n");
-        }
+        if (!tags.isEmpty()) fileContent.append("tags: [").append(tags).append("]\n");
         fileContent.append("---\n\n");
         fileContent.append(content);
 
@@ -146,10 +141,7 @@ public class NotesController {
             @RequestBody Map<String, String> body) {
 
         Path notePath = NOTES_DIR.resolve(filename);
-
-        if (!Files.exists(notePath)) {
-            return ResponseEntity.notFound().build();
-        }
+        if (!Files.exists(notePath)) return ResponseEntity.notFound().build();
 
         try {
             List<String> lines = Files.readAllLines(notePath);
@@ -173,12 +165,8 @@ public class NotesController {
             fileContent.append("title: ").append(title).append("\n");
             fileContent.append("created: ").append(created).append("\n");
             fileContent.append("modified: ").append(modifiedNow).append("\n");
-            if (!tags.isEmpty()) {
-                fileContent.append("tags: [").append(tags).append("]\n");
-            }
-            if (!author.isEmpty()) {
-                fileContent.append("author: ").append(author).append("\n");
-            }
+            if (!tags.isEmpty()) fileContent.append("tags: [").append(tags).append("]\n");
+            if (!author.isEmpty()) fileContent.append("author: ").append(author).append("\n");
             fileContent.append("---\n\n");
             fileContent.append(content);
 
@@ -195,10 +183,7 @@ public class NotesController {
     @DeleteMapping("/notes/{filename}")
     public ResponseEntity<Map<String, String>> deleteNote(@PathVariable String filename) {
         Path notePath = NOTES_DIR.resolve(filename);
-
-        if (!Files.exists(notePath)) {
-            return ResponseEntity.notFound().build();
-        }
+        if (!Files.exists(notePath)) return ResponseEntity.notFound().build();
 
         try {
             Files.delete(notePath);
@@ -213,9 +198,7 @@ public class NotesController {
      */
     @GetMapping("/datasets")
     public List<Map<String, String>> listDatasets() throws IOException {
-        if (!Files.exists(DATASETS_DIR)) {
-            return List.of();
-        }
+        if (!Files.exists(DATASETS_DIR)) return List.of();
 
         try (Stream<Path> paths = Files.walk(DATASETS_DIR, 1)) {
             return paths
@@ -230,8 +213,8 @@ public class NotesController {
                     dataset.put("filename", p.getFileName().toString());
                     dataset.put("size", String.valueOf(p.toFile().length()));
                     String sidecar = p.getFileName().toString() + ".dataset.yml";
-                    Path sidecarPath = DATASETS_DIR.resolve(sidecar);
-                    dataset.put("hasMeta", String.valueOf(Files.exists(sidecarPath)));
+                    dataset.put("hasMeta", String.valueOf(
+                        Files.exists(DATASETS_DIR.resolve(sidecar))));
                     return dataset;
                 })
                 .collect(Collectors.toList());
@@ -239,7 +222,7 @@ public class NotesController {
     }
 
     /**
-     * POST /api/datasets - Upload and validate a small dataset file
+     * POST /api/datasets - Upload and validate a small dataset
      */
     @PostMapping("/datasets")
     public ResponseEntity<Map<String, Object>> uploadDataset(
@@ -259,12 +242,8 @@ public class NotesController {
                 .body(Map.of("error", "Only CSV and JSON files are supported"));
         }
 
-        Map<String, Object> validation;
-        if (filename.endsWith(".csv")) {
-            validation = validateCSV(content);
-        } else {
-            validation = validateJSON(content);
-        }
+        Map<String, Object> validation = filename.endsWith(".csv")
+            ? validateCSV(content) : validateJSON(content);
 
         if (!(boolean) validation.get("valid")) {
             Map<String, Object> errorResponse = new HashMap<>();
@@ -273,8 +252,7 @@ public class NotesController {
             return ResponseEntity.badRequest().body(errorResponse);
         }
 
-        Path datasetPath = DATASETS_DIR.resolve(filename);
-        Files.writeString(datasetPath, content);
+        Files.writeString(DATASETS_DIR.resolve(filename), content);
 
         String nowIso = java.time.Instant.now().toString();
         int rowCount = (int) validation.get("rowCount");
@@ -302,12 +280,11 @@ public class NotesController {
         response.put("status", "uploaded");
         response.put("rowCount", rowCount);
         response.put("colCount", colCount);
-
         return ResponseEntity.ok(response);
     }
 
     /**
-     * POST /api/datasets/upload - Stream upload a large dataset file
+     * POST /api/datasets/upload - Stream upload a large dataset
      */
     @PostMapping("/datasets/upload")
     public ResponseEntity<Map<String, Object>> streamUploadDataset(
@@ -317,8 +294,7 @@ public class NotesController {
         String filename = file.getOriginalFilename();
 
         if (filename == null || filename.isEmpty()) {
-            return ResponseEntity.badRequest()
-                .body(Map.of("error", "No file provided"));
+            return ResponseEntity.badRequest().body(Map.of("error", "No file provided"));
         }
 
         if (!filename.endsWith(".csv") && !filename.endsWith(".json")) {
@@ -326,9 +302,7 @@ public class NotesController {
                 .body(Map.of("error", "Only CSV and JSON files are supported"));
         }
 
-        if (title.isEmpty()) {
-            title = filename.replace(".csv", "").replace(".json", "");
-        }
+        if (title.isEmpty()) title = filename.replace(".csv", "").replace(".json", "");
 
         Path datasetPath = DATASETS_DIR.resolve(filename);
         Files.copy(file.getInputStream(), datasetPath, StandardCopyOption.REPLACE_EXISTING);
@@ -341,9 +315,7 @@ public class NotesController {
                 String headerLine = reader.readLine();
                 if (headerLine != null) {
                     colCount = headerLine.split(",").length;
-                    while (reader.readLine() != null) {
-                        rowCount++;
-                    }
+                    while (reader.readLine() != null) rowCount++;
                 }
             }
         } else {
@@ -374,7 +346,6 @@ public class NotesController {
         response.put("size", file.getSize());
         response.put("rowCount", rowCount);
         response.put("colCount", colCount);
-
         return ResponseEntity.ok(response);
     }
 
@@ -384,15 +355,12 @@ public class NotesController {
     private Map<String, Object> validateCSV(String content) {
         Map<String, Object> result = new HashMap<>();
         List<String> errors = new ArrayList<>();
-
         String[] lines = content.split("\n");
 
         if (lines.length == 0) {
             errors.add("File is empty");
-            result.put("valid", false);
-            result.put("errors", errors);
-            result.put("rowCount", 0);
-            result.put("colCount", 0);
+            result.put("valid", false); result.put("errors", errors);
+            result.put("rowCount", 0); result.put("colCount", 0);
             return result;
         }
 
@@ -401,10 +369,8 @@ public class NotesController {
 
         if (expectedCols == 0) {
             errors.add("Header row is empty");
-            result.put("valid", false);
-            result.put("errors", errors);
-            result.put("rowCount", 0);
-            result.put("colCount", 0);
+            result.put("valid", false); result.put("errors", errors);
+            result.put("rowCount", 0); result.put("colCount", 0);
             return result;
         }
 
@@ -436,41 +402,29 @@ public class NotesController {
 
         if (content.trim().isEmpty()) {
             errors.add("File is empty");
-            result.put("valid", false);
-            result.put("errors", errors);
-            result.put("rowCount", 0);
-            result.put("colCount", 0);
+            result.put("valid", false); result.put("errors", errors);
+            result.put("rowCount", 0); result.put("colCount", 0);
             return result;
         }
 
         try {
             ObjectMapper mapper = new ObjectMapper();
             JsonNode node = mapper.readTree(content);
-
-            int rowCount = 0;
-            int colCount = 0;
+            int rowCount = 0, colCount = 0;
 
             if (node.isArray()) {
                 rowCount = node.size();
-                if (rowCount > 0 && node.get(0).isObject()) {
-                    colCount = node.get(0).size();
-                }
+                if (rowCount > 0 && node.get(0).isObject()) colCount = node.get(0).size();
             } else if (node.isObject()) {
-                colCount = node.size();
-                rowCount = 1;
+                colCount = node.size(); rowCount = 1;
             }
 
-            result.put("valid", true);
-            result.put("errors", errors);
-            result.put("rowCount", rowCount);
-            result.put("colCount", colCount);
-
+            result.put("valid", true); result.put("errors", errors);
+            result.put("rowCount", rowCount); result.put("colCount", colCount);
         } catch (Exception e) {
             errors.add("Invalid JSON: " + e.getMessage());
-            result.put("valid", false);
-            result.put("errors", errors);
-            result.put("rowCount", 0);
-            result.put("colCount", 0);
+            result.put("valid", false); result.put("errors", errors);
+            result.put("rowCount", 0); result.put("colCount", 0);
         }
 
         return result;
@@ -484,10 +438,7 @@ public class NotesController {
             @PathVariable String filename) throws IOException {
 
         Path datasetPath = DATASETS_DIR.resolve(filename);
-
-        if (!Files.exists(datasetPath)) {
-            return ResponseEntity.notFound().build();
-        }
+        if (!Files.exists(datasetPath)) return ResponseEntity.notFound().build();
 
         Map<String, Object> preview = new HashMap<>();
         preview.put("filename", filename);
@@ -496,9 +447,7 @@ public class NotesController {
             List<String> lines = Files.readAllLines(datasetPath);
             preview.put("headers", lines.isEmpty() ? List.of() :
                 List.of(lines.get(0).split(",")));
-            preview.put("rows", lines.stream()
-                .skip(1)
-                .limit(5)
+            preview.put("rows", lines.stream().skip(1).limit(5)
                 .map(line -> List.of(line.split(",")))
                 .collect(Collectors.toList()));
             preview.put("totalRows", Math.max(0, lines.size() - 1));
@@ -511,17 +460,14 @@ public class NotesController {
     }
 
     /**
-     * GET /api/datasets/{filename}/full - Get full dataset content
+     * GET /api/datasets/{filename}/full - Get full dataset
      */
     @GetMapping("/datasets/{filename}/full")
     public ResponseEntity<Map<String, Object>> fullDataset(
             @PathVariable String filename) throws IOException {
 
         Path datasetPath = DATASETS_DIR.resolve(filename);
-
-        if (!Files.exists(datasetPath)) {
-            return ResponseEntity.notFound().build();
-        }
+        if (!Files.exists(datasetPath)) return ResponseEntity.notFound().build();
 
         Map<String, Object> data = new HashMap<>();
         data.put("filename", filename);
@@ -530,39 +476,137 @@ public class NotesController {
             List<String> lines = Files.readAllLines(datasetPath);
             data.put("headers", lines.isEmpty() ? List.of() :
                 List.of(lines.get(0).split(",")));
-            data.put("rows", lines.stream()
-                .skip(1)
+            data.put("rows", lines.stream().skip(1)
                 .map(line -> List.of(line.split(",")))
                 .collect(Collectors.toList()));
             data.put("totalRows", Math.max(0, lines.size() - 1));
         } else {
-            String content = Files.readString(datasetPath);
-            data.put("content", content);
+            data.put("content", Files.readString(datasetPath));
         }
 
         return ResponseEntity.ok(data);
     }
 
     /**
-     * DELETE /api/datasets/{filename} - Delete a dataset and its sidecar
+     * DELETE /api/datasets/{filename} - Delete a dataset and sidecar
      */
     @DeleteMapping("/datasets/{filename}")
     public ResponseEntity<Map<String, String>> deleteDataset(
             @PathVariable String filename) throws IOException {
 
         Path datasetPath = DATASETS_DIR.resolve(filename);
-
-        if (!Files.exists(datasetPath)) {
-            return ResponseEntity.notFound().build();
-        }
+        if (!Files.exists(datasetPath)) return ResponseEntity.notFound().build();
 
         Files.delete(datasetPath);
-
         Path sidecarPath = DATASETS_DIR.resolve(filename + ".dataset.yml");
-        if (Files.exists(sidecarPath)) {
-            Files.delete(sidecarPath);
+        if (Files.exists(sidecarPath)) Files.delete(sidecarPath);
+
+        return ResponseEntity.ok(Map.of("filename", filename, "status", "deleted"));
+    }
+
+    /**
+     * POST /api/media/{noteId} - Upload media for a note
+     */
+    @PostMapping("/media/{noteId}")
+    public ResponseEntity<Map<String, Object>> uploadMedia(
+            @PathVariable String noteId,
+            @RequestParam("file") MultipartFile file) throws IOException {
+
+        String filename = file.getOriginalFilename();
+
+        if (filename == null || filename.isEmpty()) {
+            return ResponseEntity.badRequest().body(Map.of("error", "No file provided"));
         }
 
+        String lower = filename.toLowerCase();
+        boolean isImage = lower.endsWith(".jpg") || lower.endsWith(".jpeg")
+            || lower.endsWith(".png") || lower.endsWith(".gif") || lower.endsWith(".webp");
+        boolean isVideo = lower.endsWith(".mp4") || lower.endsWith(".mov")
+            || lower.endsWith(".webm") || lower.endsWith(".avi");
+
+        if (!isImage && !isVideo) {
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", "Only images and videos are supported"));
+        }
+
+        Path noteMediaDir = MEDIA_DIR.resolve(noteId);
+        Files.createDirectories(noteMediaDir);
+
+        Path filePath = noteMediaDir.resolve(filename);
+        Files.copy(file.getInputStream(), filePath, StandardCopyOption.REPLACE_EXISTING);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("filename", filename);
+        response.put("noteId", noteId);
+        response.put("type", isImage ? "image" : "video");
+        response.put("size", file.getSize());
+        response.put("url", "/api/media/" + noteId + "/" + filename);
+        response.put("status", "uploaded");
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * GET /api/media/{noteId} - List all media for a note
+     */
+    @GetMapping("/media/{noteId}")
+    public List<Map<String, Object>> listMedia(@PathVariable String noteId) throws IOException {
+        Path noteMediaDir = MEDIA_DIR.resolve(noteId);
+        if (!Files.exists(noteMediaDir)) return List.of();
+
+        try (Stream<Path> paths = Files.walk(noteMediaDir, 1)) {
+            return paths
+                .filter(Files::isRegularFile)
+                .sorted()
+                .map(p -> {
+                    String name = p.getFileName().toString();
+                    String low = name.toLowerCase();
+                    boolean isImage = low.endsWith(".jpg") || low.endsWith(".jpeg")
+                        || low.endsWith(".png") || low.endsWith(".gif")
+                        || low.endsWith(".webp");
+
+                    Map<String, Object> media = new HashMap<>();
+                    media.put("filename", name);
+                    media.put("type", isImage ? "image" : "video");
+                    media.put("size", p.toFile().length());
+                    media.put("url", "/api/media/" + noteId + "/" + name);
+                    return media;
+                })
+                .collect(Collectors.toList());
+        }
+    }
+
+    /**
+     * GET /api/media/{noteId}/{filename} - Serve a media file
+     */
+    @GetMapping("/media/{noteId}/{filename}")
+    public ResponseEntity<Resource> serveMedia(
+            @PathVariable String noteId,
+            @PathVariable String filename) throws IOException {
+
+        Path filePath = MEDIA_DIR.resolve(noteId).resolve(filename);
+        if (!Files.exists(filePath)) return ResponseEntity.notFound().build();
+
+        Resource resource = new UrlResource(filePath.toUri());
+        String contentType = Files.probeContentType(filePath);
+        if (contentType == null) contentType = "application/octet-stream";
+
+        return ResponseEntity.ok()
+            .contentType(MediaType.parseMediaType(contentType))
+            .body(resource);
+    }
+
+    /**
+     * DELETE /api/media/{noteId}/{filename} - Delete a media file
+     */
+    @DeleteMapping("/media/{noteId}/{filename}")
+    public ResponseEntity<Map<String, String>> deleteMedia(
+            @PathVariable String noteId,
+            @PathVariable String filename) throws IOException {
+
+        Path filePath = MEDIA_DIR.resolve(noteId).resolve(filename);
+        if (!Files.exists(filePath)) return ResponseEntity.notFound().build();
+
+        Files.delete(filePath);
         return ResponseEntity.ok(Map.of("filename", filename, "status", "deleted"));
     }
 
@@ -571,9 +615,7 @@ public class NotesController {
      */
     @GetMapping("/stats")
     public Map<String, Object> getStats() throws IOException {
-        if (!Files.exists(NOTES_DIR)) {
-            return Map.of("totalNotes", 0);
-        }
+        if (!Files.exists(NOTES_DIR)) return Map.of("totalNotes", 0);
 
         List<Path> noteFiles;
         try (Stream<Path> paths = Files.walk(NOTES_DIR, 1)) {
@@ -593,32 +635,21 @@ public class NotesController {
 
         for (Path noteFile : noteFiles) {
             String content = Files.readString(noteFile);
-            String[] words = content.split("\\s+");
-            totalWords += words.length;
+            totalWords += content.split("\\s+").length;
 
-            List<String> lines = Files.readAllLines(noteFile);
-            for (String line : lines) {
+            for (String line : Files.readAllLines(noteFile)) {
                 if (line.startsWith("tags:")) {
-                    String tagLine = line.substring(5).trim()
-                        .replaceAll("[\\[\\]]", "");
+                    String tagLine = line.substring(5).trim().replaceAll("[\\[\\]]", "");
                     for (String tag : tagLine.split(",")) {
                         String t = tag.trim();
-                        if (!t.isEmpty()) {
-                            tagCounts.put(t, tagCounts.getOrDefault(t, 0) + 1);
-                        }
+                        if (!t.isEmpty()) tagCounts.put(t, tagCounts.getOrDefault(t, 0) + 1);
                     }
                 }
             }
 
             long modified = noteFile.toFile().lastModified();
-            if (modified > newestTime) {
-                newestTime = modified;
-                newestFile = noteFile.getFileName().toString();
-            }
-            if (modified < oldestTime) {
-                oldestTime = modified;
-                oldestFile = noteFile.getFileName().toString();
-            }
+            if (modified > newestTime) { newestTime = modified; newestFile = noteFile.getFileName().toString(); }
+            if (modified < oldestTime) { oldestTime = modified; oldestFile = noteFile.getFileName().toString(); }
         }
 
         List<Map<String, Object>> topTags = tagCounts.entrySet().stream()
@@ -640,7 +671,6 @@ public class NotesController {
         stats.put("topTags", topTags);
         stats.put("newestNote", newestFile);
         stats.put("oldestNote", oldestFile);
-
         return stats;
     }
 
@@ -656,7 +686,7 @@ public class NotesController {
     }
 
     /**
-     * GET /api/csrf - Get CSRF token for logout form
+     * GET /api/csrf - Get CSRF token
      */
     @GetMapping("/csrf")
     public Map<String, String> getCsrf(jakarta.servlet.http.HttpServletRequest request) {
