@@ -12,6 +12,61 @@
             background: #0f0f0f;
             color: #d4d4d4;
             min-height: 100vh;
+            position: relative;
+        }
+
+        /* Left decorative column */
+        body::before {
+            content: '';
+            position: fixed;
+            left: 0;
+            top: 0;
+            width: calc((100vw - 960px) / 2);
+            height: 100%;
+            background:
+                repeating-linear-gradient(
+                    45deg,
+                    transparent,
+                    transparent 30px,
+                    rgba(107, 15, 26, 0.08) 30px,
+                    rgba(107, 15, 26, 0.08) 32px
+                ),
+                repeating-linear-gradient(
+                    -45deg,
+                    transparent,
+                    transparent 30px,
+                    rgba(107, 15, 26, 0.05) 30px,
+                    rgba(107, 15, 26, 0.05) 32px
+                );
+            pointer-events: none;
+            z-index: 0;
+        }
+
+        /* Right decorative column */
+        body::after {
+            content: '';
+            position: fixed;
+            right: 0;
+            top: 0;
+            width: calc((100vw - 960px) / 2);
+            height: 100%;
+            background:
+                repeating-linear-gradient(
+                    45deg,
+                    transparent,
+                    transparent 30px,
+                    rgba(107, 15, 26, 0.08) 30px,
+                    rgba(107, 15, 26, 0.08) 32px
+                ),
+                repeating-linear-gradient(
+                    -45deg,
+                    transparent,
+                    transparent 30px,
+                    rgba(107, 15, 26, 0.05) 30px,
+                    rgba(107, 15, 26, 0.05) 32px
+                );
+            pointer-events: none;
+            z-index: 0;
         }
 
         header {
@@ -32,7 +87,13 @@
 
         header p { color: #888; font-size: 0.85rem; margin-top: 2px; }
 
-        .container { max-width: 960px; margin: 40px auto; padding: 0 20px; }
+        .container {
+            max-width: 960px;
+            margin: 40px auto;
+            padding: 0 20px;
+            position: relative;
+            z-index: 2;
+        }
 
         .stats-bar {
             background: #1a0a0a;
@@ -377,6 +438,40 @@
 </header>
 
 <div class="container">
+    <!-- Left accent bar -->
+    <div style="
+        position: fixed;
+        left: calc((100vw - 960px) / 2 - 3px);
+        top: 80px;
+        width: 3px;
+        height: calc(100vh - 80px);
+        background: linear-gradient(to bottom,
+            transparent,
+            rgba(107, 15, 26, 0.4) 20%,
+            rgba(201, 168, 76, 0.3) 50%,
+            rgba(107, 15, 26, 0.4) 80%,
+            transparent);
+        pointer-events: none;
+        z-index: 0;
+    "></div>
+    <!-- Right accent bar -->
+    <div style="
+        position: fixed;
+        right: calc((100vw - 960px) / 2 - 3px);
+        top: 80px;
+        width: 3px;
+        height: calc(100vh - 80px);
+        background: linear-gradient(to bottom,
+            transparent,
+            rgba(107, 15, 26, 0.4) 20%,
+            rgba(201, 168, 76, 0.3) 50%,
+            rgba(107, 15, 26, 0.4) 80%,
+            transparent);
+        pointer-events: none;
+        z-index: 0;
+    ">
+    </div>
+
     <div class="stats-bar">
         <div class="stat">
             <div class="number" id="total-notes">-</div>
@@ -399,6 +494,7 @@
     <div id="datasets-grid" style="display:none;">
         <div class="loading">Loading datasets...</div>
     </div>
+
 </div>
 
 <!-- Read Modal -->
