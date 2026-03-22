@@ -4,6 +4,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>JumzysNotes</title>
+    <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
     <style>
         * { margin: 0; padding: 0; box-sizing: border-box; }
 
@@ -241,10 +242,54 @@
         .modal-meta { color: #666; font-size: 0.82rem; margin-bottom: 14px; }
 
         .modal-content {
-            white-space: pre-wrap;
             line-height: 1.7;
             font-size: 0.92rem;
             color: #bbb;
+        }
+
+        .modal-content h1, .modal-content h2, .modal-content h3 {
+            color: #c9a84c;
+            margin: 16px 0 8px 0;
+        }
+
+        .modal-content p { margin-bottom: 10px; }
+
+        .modal-content ul, .modal-content ol {
+            margin: 8px 0 8px 20px;
+        }
+
+        .modal-content li { margin-bottom: 4px; }
+
+        .modal-content code {
+            background: #0f0f0f;
+            color: #c9a84c;
+            padding: 2px 6px;
+            border-radius: 4px;
+            font-size: 0.85rem;
+        }
+
+        .modal-content pre {
+            background: #0f0f0f;
+            padding: 12px;
+            border-radius: 6px;
+            overflow-x: auto;
+            margin: 10px 0;
+            border: 1px solid #2a1010;
+        }
+
+        .modal-content blockquote {
+            border-left: 3px solid #6b0f1a;
+            padding-left: 12px;
+            color: #888;
+            margin: 10px 0;
+        }
+
+        .modal-content a { color: #c9a84c; }
+
+        .modal-content hr {
+            border: none;
+            border-top: 1px solid #2a1010;
+            margin: 16px 0;
         }
 
         .modal input, .modal textarea {
@@ -483,8 +528,25 @@
         </div>
     </div>
 
-    <div class="search-bar">
-        <input type="text" id="search-input" placeholder="Search notes..." oninput="filterNotes()">
+    <div class="search-bar" style="display:flex; gap:10px;">
+        <input type="text" id="search-input" placeholder="Search notes..."
+            oninput="filterNotes()" style="flex:1;">
+        <select id="sort-select" onchange="sortNotes()"
+            style="
+                background:#1a0a0a;
+                color:#c9a84c;
+                border:1px solid #2a1010;
+                border-radius:8px;
+                padding:12px 16px;
+                font-size:0.9rem;
+                cursor:pointer;
+                outline:none;
+            ">
+            <option value="modified-desc">Newest first</option>
+            <option value="modified-asc">Oldest first</option>
+            <option value="title-asc">A → Z</option>
+            <option value="title-desc">Z → A</option>
+        </select>
     </div>
 
     <div class="notes-grid" id="notes-grid">
@@ -663,17 +725,31 @@
         document.getElementById('total-tags').textContent = allTags.size;
     }
 
-    function renderNotes(notes) {
+    async function renderNotes(notes) {
         const grid = document.getElementById('notes-grid');
         if (notes.length === 0) {
             grid.innerHTML = '<div class="empty">No notes found.</div>';
             return;
         }
 
+        // Render cards first
         grid.innerHTML = notes.map((note, i) => `
-            <div class="note-card">
+            <div class="note-card" id="card-${i}">
                 <div onclick="openModal(${i})">
-                    <div class="note-title">${note.title}</div>
+                    <div style="display:flex; justify-content:space-between; align-items:start;">
+                        <div class="note-title">${note.title}</div>
+                        <div id="media-badge-${i}" style="display:none;">
+                            <span style="
+                                background:#2a1010;
+                                color:#c9a84c;
+                                border:1px solid #3a1515;
+                                padding:2px 8px;
+                                border-radius:10px;
+                                font-size:0.7rem;
+                                white-space:nowrap;
+                            ">📎 <span id="media-count-${i}">0</span></span>
+                        </div>
+                    </div>
                     <div class="note-meta">
                         ${note.modified ? 'Modified ' + note.modified.substring(0, 10) : ''}
                     </div>
@@ -688,9 +764,23 @@
                 </div>
             </div>
         `).join('');
+
+        // Load media counts in background
+        notes.forEach((note, i) => {
+            fetch(`/api/media/${note.filename}`)
+                .then(r => r.json())
+                .then(mediaList => {
+                    if (mediaList.length > 0) {
+                        document.getElementById(`media-badge-${i}`).style.display = 'block';
+                        document.getElementById(`media-count-${i}`).textContent = mediaList.length;
+                    }
+                })
+                .catch(() => {});
+        });
     }
 
     function filterNotes() {
+        sortNotes();
         const keyword = document.getElementById('search-input').value.toLowerCase();
         const filtered = allNotes.filter(n =>
             n.title.toLowerCase().includes(keyword) ||
@@ -698,6 +788,35 @@
             n.tags.some(t => t.toLowerCase().includes(keyword))
         );
         renderNotes(filtered);
+    }
+
+    function sortNotes() {
+        const sortBy = document.getElementById('sort-select').value;
+        const keyword = document.getElementById('search-input').value.toLowerCase();
+
+        let notes = keyword
+            ? allNotes.filter(n =>
+                n.title.toLowerCase().includes(keyword) ||
+                n.body.toLowerCase().includes(keyword) ||
+                n.tags.some(t => t.toLowerCase().includes(keyword)))
+            : [...allNotes];
+
+        notes.sort((a, b) => {
+            switch (sortBy) {
+                case 'modified-desc':
+                    return (b.modified || '').localeCompare(a.modified || '');
+                case 'modified-asc':
+                    return (a.modified || '').localeCompare(b.modified || '');
+                case 'title-asc':
+                    return a.title.localeCompare(b.title);
+                case 'title-desc':
+                    return b.title.localeCompare(a.title);
+                default:
+                    return 0;
+            }
+        });
+
+        renderNotes(notes);
     }
 
     // READ modal with media
@@ -708,7 +827,8 @@
         document.getElementById('modal-title').textContent = note.title;
         document.getElementById('modal-meta').textContent =
             `Created: ${note.created || 'N/A'} | Modified: ${note.modified || 'N/A'}`;
-        document.getElementById('modal-content').textContent = note.body;
+        // Render markdown instead of plain text
+        document.getElementById('modal-content').innerHTML = marked.parse(note.body || '');
         document.getElementById('modal-overlay').classList.add('active');
 
         // Load media attachments

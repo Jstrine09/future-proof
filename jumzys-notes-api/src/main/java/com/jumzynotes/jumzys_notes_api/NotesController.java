@@ -611,6 +611,62 @@ public class NotesController {
     }
 
     /**
+     * GET /api/search?q=keyword - Search notes by keyword
+     */
+    @GetMapping("/search")
+    public List<Map<String, Object>> searchNotes(
+            @RequestParam("q") String query) throws IOException {
+
+        if (!Files.exists(NOTES_DIR)) return List.of();
+
+        String lowerQuery = query.toLowerCase().trim();
+        List<Map<String, Object>> results = new ArrayList<>();
+
+        try (Stream<Path> paths = Files.walk(NOTES_DIR, 1)) {
+            List<Path> noteFiles = paths
+                .filter(Files::isRegularFile)
+                .filter(p -> p.toString().endsWith(".md"))
+                .toList();
+
+            for (Path noteFile : noteFiles) {
+                String content = Files.readString(noteFile);
+                String lower = content.toLowerCase();
+
+                if (lower.contains(lowerQuery)) {
+                    // Parse metadata
+                    Map<String, String> meta = new HashMap<>();
+                    String title = noteFile.getFileName().toString();
+                    String tags = "";
+
+                    String[] lines = content.split("\n");
+                    if (lines.length > 0 && lines[0].trim().equals("---")) {
+                        for (String line : lines) {
+                            if (line.startsWith("title:")) title = line.substring(6).trim();
+                            if (line.startsWith("tags:")) tags = line.substring(5).trim();
+                        }
+                    }
+
+                    // Find matching excerpt
+                    int matchIdx = lower.indexOf(lowerQuery);
+                    int start = Math.max(0, matchIdx - 60);
+                    int end = Math.min(content.length(), matchIdx + query.length() + 60);
+                    String excerpt = "..." + content.substring(start, end).trim() + "...";
+
+                    Map<String, Object> result = new HashMap<>();
+                    result.put("filename", noteFile.getFileName().toString());
+                    result.put("title", title);
+                    result.put("tags", tags);
+                    result.put("excerpt", excerpt);
+                    result.put("matchIndex", matchIdx);
+                    results.add(result);
+                }
+            }
+        }
+
+        return results;
+    }
+
+    /**
      * GET /api/stats - Get statistics about notes
      */
     @GetMapping("/stats")
