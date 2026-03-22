@@ -3,6 +3,7 @@ package com.jumzynotes.jumzys_notes_api;
 import java.io.IOException;
 import java.nio.file.Files;
 import java.nio.file.Path;
+import java.nio.file.StandardCopyOption;
 import java.util.ArrayList;
 import java.util.HashMap;
 import java.util.List;
@@ -10,7 +11,6 @@ import java.util.Map;
 import java.util.stream.Collectors;
 import java.util.stream.Stream;
 
-import jakarta.annotation.PostConstruct;
 import org.springframework.http.ResponseEntity;
 import org.springframework.web.bind.annotation.DeleteMapping;
 import org.springframework.web.bind.annotation.GetMapping;
@@ -19,9 +19,14 @@ import org.springframework.web.bind.annotation.PostMapping;
 import org.springframework.web.bind.annotation.PutMapping;
 import org.springframework.web.bind.annotation.RequestBody;
 import org.springframework.web.bind.annotation.RequestMapping;
+import org.springframework.web.bind.annotation.RequestParam;
 import org.springframework.web.bind.annotation.RestController;
+import org.springframework.web.multipart.MultipartFile;
+
 import com.fasterxml.jackson.databind.JsonNode;
 import com.fasterxml.jackson.databind.ObjectMapper;
+
+import jakarta.annotation.PostConstruct;
 
 @RestController
 @RequestMapping("/api")
@@ -234,7 +239,7 @@ public class NotesController {
     }
 
     /**
-     * POST /api/datasets - Upload and validate a dataset file
+     * POST /api/datasets - Upload and validate a small dataset file
      */
     @PostMapping("/datasets")
     public ResponseEntity<Map<String, Object>> uploadDataset(
@@ -254,7 +259,6 @@ public class NotesController {
                 .body(Map.of("error", "Only CSV and JSON files are supported"));
         }
 
-        // Validate based on file type
         Map<String, Object> validation;
         if (filename.endsWith(".csv")) {
             validation = validateCSV(content);
@@ -262,7 +266,6 @@ public class NotesController {
             validation = validateJSON(content);
         }
 
-        // If validation failed return errors
         if (!(boolean) validation.get("valid")) {
             Map<String, Object> errorResponse = new HashMap<>();
             errorResponse.put("error", "Validation failed");
@@ -270,11 +273,9 @@ public class NotesController {
             return ResponseEntity.badRequest().body(errorResponse);
         }
 
-        // Save the dataset file
         Path datasetPath = DATASETS_DIR.resolve(filename);
         Files.writeString(datasetPath, content);
 
-        // Create sidecar YAML metadata file
         String nowIso = java.time.Instant.now().toString();
         int rowCount = (int) validation.get("rowCount");
         int colCount = (int) validation.get("colCount");
@@ -289,22 +290,88 @@ public class NotesController {
                 rowCount: %d
                 colCount: %d
                 """,
-                title,
-                filename,
-                nowIso,
-                nowIso,
+                title, filename, nowIso, nowIso,
                 filename.endsWith(".csv") ? "csv" : "json",
-                content.length(),
-                rowCount,
-                colCount);
+                content.length(), rowCount, colCount);
 
-        String sidecarFilename = filename + ".dataset.yml";
-        Files.writeString(DATASETS_DIR.resolve(sidecarFilename), sidecarContent);
+        Files.writeString(DATASETS_DIR.resolve(filename + ".dataset.yml"), sidecarContent);
 
         Map<String, Object> response = new HashMap<>();
         response.put("filename", filename);
-        response.put("sidecar", sidecarFilename);
+        response.put("sidecar", filename + ".dataset.yml");
         response.put("status", "uploaded");
+        response.put("rowCount", rowCount);
+        response.put("colCount", colCount);
+
+        return ResponseEntity.ok(response);
+    }
+
+    /**
+     * POST /api/datasets/upload - Stream upload a large dataset file
+     */
+    @PostMapping("/datasets/upload")
+    public ResponseEntity<Map<String, Object>> streamUploadDataset(
+            @RequestParam("file") MultipartFile file,
+            @RequestParam(value = "title", defaultValue = "") String title) throws IOException {
+
+        String filename = file.getOriginalFilename();
+
+        if (filename == null || filename.isEmpty()) {
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", "No file provided"));
+        }
+
+        if (!filename.endsWith(".csv") && !filename.endsWith(".json")) {
+            return ResponseEntity.badRequest()
+                .body(Map.of("error", "Only CSV and JSON files are supported"));
+        }
+
+        if (title.isEmpty()) {
+            title = filename.replace(".csv", "").replace(".json", "");
+        }
+
+        Path datasetPath = DATASETS_DIR.resolve(filename);
+        Files.copy(file.getInputStream(), datasetPath, StandardCopyOption.REPLACE_EXISTING);
+
+        int rowCount = 0;
+        int colCount = 0;
+
+        if (filename.endsWith(".csv")) {
+            try (java.io.BufferedReader reader = Files.newBufferedReader(datasetPath)) {
+                String headerLine = reader.readLine();
+                if (headerLine != null) {
+                    colCount = headerLine.split(",").length;
+                    while (reader.readLine() != null) {
+                        rowCount++;
+                    }
+                }
+            }
+        } else {
+            rowCount = -1;
+            colCount = -1;
+        }
+
+        String nowIso = java.time.Instant.now().toString();
+        String sidecarContent = String.format("""
+                title: %s
+                filename: %s
+                created: %s
+                modified: %s
+                format: %s
+                size: %d
+                rowCount: %d
+                colCount: %d
+                """,
+                title, filename, nowIso, nowIso,
+                filename.endsWith(".csv") ? "csv" : "json",
+                file.getSize(), rowCount, colCount);
+
+        Files.writeString(DATASETS_DIR.resolve(filename + ".dataset.yml"), sidecarContent);
+
+        Map<String, Object> response = new HashMap<>();
+        response.put("filename", filename);
+        response.put("status", "uploaded");
+        response.put("size", file.getSize());
         response.put("rowCount", rowCount);
         response.put("colCount", colCount);
 
@@ -345,7 +412,6 @@ public class NotesController {
         for (int i = 1; i < lines.length; i++) {
             String line = lines[i].trim();
             if (line.isEmpty()) continue;
-
             String[] cols = line.split(",");
             if (cols.length != expectedCols) {
                 errors.add("Row " + (i + 1) + " has " + cols.length +

@@ -9,15 +9,15 @@
 
         body {
             font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            background: rgb(10, 45, 30);
-            color: #e0e0e0;
+            background: #0f0f0f;
+            color: #d4d4d4;
             min-height: 100vh;
         }
 
         header {
-            background: rgb(50, 100, 50);
+            background: #1a0a0a;
             padding: 20px 40px;
-            border-bottom: 2px solid rgb(10, 45, 30);
+            border-bottom: 2px solid #6b0f1a;
             display: flex;
             align-items: center;
             justify-content: space-between;
@@ -25,24 +25,31 @@
 
         header h1 {
             font-size: 1.8rem;
-            color: rgb(240, 230, 210);
-            letter-spacing: 1px;
+            color: #c9a84c;
+            letter-spacing: 2px;
+            font-weight: 700;
+        }
+
+        header p {
+            color: #888;
+            font-size: 0.85rem;
+            margin-top: 2px;
         }
 
         .container {
-            max-width: 900px;
+            max-width: 960px;
             margin: 40px auto;
             padding: 0 20px;
         }
 
         .stats-bar {
-            background: rgb(50, 100, 50);
+            background: #1a0a0a;
             border-radius: 8px;
             padding: 15px 20px;
             margin-bottom: 30px;
             display: flex;
             gap: 30px;
-            border: 1px solid rgb(10, 45, 30);
+            border: 1px solid #2a1010;
         }
 
         .stat { text-align: center; }
@@ -50,12 +57,12 @@
         .stat .number {
             font-size: 1.5rem;
             font-weight: bold;
-            color: rgb(240, 230, 210);
+            color: #c9a84c;
         }
 
         .stat .label {
             font-size: 0.8rem;
-            color: rgb(240, 230, 210);
+            color: #888;
         }
 
         .search-bar { margin-bottom: 20px; }
@@ -63,43 +70,45 @@
         .search-bar input {
             width: 100%;
             padding: 12px 16px;
-            background: rgb(50, 100, 50);
-            border: 1px solid rgb(120, 140, 100);
+            background: #1a0a0a;
+            border: 1px solid #2a1010;
             border-radius: 8px;
-            color: #e0e0e0;
+            color: #d4d4d4;
             font-size: 1rem;
             outline: none;
         }
 
-        .search-bar input:focus { border-color: rgb(240, 230, 210); }
-        .search-bar input::placeholder { color: rgb(240, 230, 210); }
+        .search-bar input:focus { border-color: #6b0f1a; }
+        .search-bar input::placeholder { color: #555; }
 
-        .notes-grid { display: grid; gap: 16px; }
+        .notes-grid { display: grid; gap: 12px; }
 
         .note-card {
-            background: rgb(50, 100, 50);
-            border: 1px solid rgb(120, 140, 100);
+            background: #1a0a0a;
+            border: 1px solid #2a1010;
             border-radius: 8px;
-            padding: 20px;
+            padding: 18px 20px;
             transition: border-color 0.2s, transform 0.1s;
         }
 
         .note-card:hover {
-            border-color: rgb(240, 230, 210);
-            transform: translateY(-2px);
+            border-color: #6b0f1a;
+            transform: translateY(-1px);
         }
 
         .note-title {
-            font-size: 1.1rem;
+            font-size: 1rem;
             font-weight: 600;
-            color: #fff;
-            margin-bottom: 8px;
+            color: #e8e8e8;
+            margin-bottom: 6px;
             cursor: pointer;
         }
 
+        .note-title:hover { color: #c9a84c; }
+
         .note-meta {
-            font-size: 0.8rem;
-            color: rgb(240, 230, 210);
+            font-size: 0.78rem;
+            color: #666;
             margin-bottom: 8px;
         }
 
@@ -110,17 +119,18 @@
         }
 
         .tag {
-            background: rgb(120, 140, 100);
-            color: rgb(38, 78, 38);
+            background: #2a1010;
+            color: #c9a84c;
             padding: 2px 10px;
             border-radius: 12px;
-            font-size: 0.75rem;
+            font-size: 0.72rem;
+            border: 1px solid #3a1515;
         }
 
         .note-preview {
-            font-size: 0.85rem;
-            color: rgb(240, 230, 210);
-            margin-top: 10px;
+            font-size: 0.83rem;
+            color: #666;
+            margin-top: 8px;
             line-height: 1.5;
         }
 
@@ -131,47 +141,57 @@
         }
 
         .btn-edit {
-            background: rgb(10, 45, 30);
-            color: rgb(240, 230, 210);
-            border: none;
-            padding: 6px 14px;
+            background: #2a1010;
+            color: #c9a84c;
+            border: 1px solid #3a1515;
+            padding: 5px 12px;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
         }
 
-        .btn-edit:hover { background: rgb(30, 80, 50); }
+        .btn-edit:hover {
+            background: #3a1515;
+            border-color: #c9a84c;
+        }
 
         .btn-delete {
-            background: rgb(120, 40, 40);
-            color: white;
-            border: none;
-            padding: 6px 14px;
+            background: #1a0505;
+            color: #cc4444;
+            border: 1px solid #2a0a0a;
+            padding: 5px 12px;
             border-radius: 6px;
             cursor: pointer;
-            font-size: 0.85rem;
+            font-size: 0.82rem;
         }
 
-        .btn-delete:hover { background: rgb(160, 50, 50); }
+        .btn-delete:hover {
+            background: #2a0a0a;
+            border-color: #cc4444;
+        }
 
         .btn-new {
-            background: rgb(10, 45, 30);
-            color: rgb(240, 230, 210);
-            border: 1px solid rgb(240, 230, 210);
-            padding: 10px 20px;
-            border-radius: 8px;
-            font-size: 1rem;
+            background: #1a0a0a;
+            color: #c9a84c;
+            border: 1px solid #6b0f1a;
+            padding: 9px 18px;
+            border-radius: 6px;
+            font-size: 0.9rem;
             cursor: pointer;
+            transition: background 0.2s, border-color 0.2s;
         }
 
-        .btn-new:hover { background: rgb(30, 80, 50); }
+        .btn-new:hover {
+            background: #2a1010;
+            border-color: #c9a84c;
+        }
 
         .modal-overlay {
             display: none;
             position: fixed;
             top: 0; left: 0;
             width: 100%; height: 100%;
-            background: rgba(0,0,0,0.7);
+            background: rgba(0,0,0,0.85);
             z-index: 100;
             justify-content: center;
             align-items: center;
@@ -180,117 +200,131 @@
         .modal-overlay.active { display: flex; }
 
         .modal {
-            background: rgb(50, 100, 50);
-            border: 1px solid rgb(120, 140, 100);
-            border-radius: 12px;
-            padding: 30px;
-            max-width: 700px;
+            background: #1a0a0a;
+            border: 1px solid #2a1010;
+            border-radius: 10px;
+            padding: 28px 30px;
+            max-width: 680px;
             width: 90%;
-            max-height: 80vh;
+            max-height: 82vh;
             overflow-y: auto;
             position: relative;
         }
 
         .modal h2 {
-            color: rgb(240, 230, 210);
-            margin-bottom: 15px;
-            font-size: 1.4rem;
+            color: #c9a84c;
+            margin-bottom: 18px;
+            font-size: 1.3rem;
+            letter-spacing: 1px;
         }
 
         .modal-meta {
-            color: rgb(240, 230, 210);
-            font-size: 0.85rem;
-            margin-bottom: 15px;
+            color: #666;
+            font-size: 0.82rem;
+            margin-bottom: 14px;
         }
 
         .modal-content {
             white-space: pre-wrap;
             line-height: 1.7;
-            font-size: 0.95rem;
-            color: #ccc;
+            font-size: 0.92rem;
+            color: #bbb;
         }
 
         .modal input, .modal textarea {
             width: 100%;
-            padding: 10px;
-            background: rgb(10, 45, 30);
-            border: 1px solid rgb(120, 140, 100);
+            padding: 10px 12px;
+            background: #0f0f0f;
+            border: 1px solid #2a1010;
             border-radius: 6px;
-            color: rgb(240, 230, 210);
-            font-size: 0.95rem;
+            color: #d4d4d4;
+            font-size: 0.92rem;
             font-family: inherit;
             margin-bottom: 10px;
-        }
-
-        .modal input:focus, .modal textarea:focus {
-            border-color: rgb(240, 230, 210);
             outline: none;
         }
 
+        .modal input:focus, .modal textarea:focus {
+            border-color: #6b0f1a;
+        }
+
         .modal input::placeholder, .modal textarea::placeholder {
-            color: rgb(120, 140, 100);
+            color: #444;
         }
 
         .btn-save {
             width: 100%;
-            background: rgb(10, 45, 30);
-            color: rgb(240, 230, 210);
-            border: 1px solid rgb(240, 230, 210);
+            background: #6b0f1a;
+            color: #c9a84c;
+            border: 1px solid #8a1520;
             padding: 10px;
             border-radius: 6px;
-            font-size: 1rem;
+            font-size: 0.95rem;
             cursor: pointer;
             margin-top: 5px;
+            letter-spacing: 0.5px;
         }
 
-        .btn-save:hover { background: rgb(30, 80, 50); }
+        .btn-save:hover {
+            background: #8a1520;
+            border-color: #c9a84c;
+        }
 
         .close-btn {
             position: absolute;
-            top: 15px; right: 20px;
+            top: 14px; right: 18px;
             background: none;
             border: none;
-            color: rgb(240, 230, 210);
-            font-size: 1.5rem;
+            color: #555;
+            font-size: 1.4rem;
             cursor: pointer;
         }
 
-        .close-btn:hover { color: #fff; }
+        .close-btn:hover { color: #c9a84c; }
 
         .loading {
             text-align: center;
             padding: 60px;
-            color: rgb(240, 230, 210);
+            color: #555;
         }
 
         .empty {
             text-align: center;
             padding: 60px;
-            color: rgb(120, 140, 100);
+            color: #444;
         }
+
+        /* Scrollbar styling */
+        ::-webkit-scrollbar { width: 6px; }
+        ::-webkit-scrollbar-track { background: #0f0f0f; }
+        ::-webkit-scrollbar-thumb { background: #2a1010; border-radius: 3px; }
+        ::-webkit-scrollbar-thumb:hover { background: #6b0f1a; }
     </style>
 </head>
 <body>
 
 <header>
-    <h1>📝 JumzysNotes</h1>
-    <div style="display:flex; gap:10px; align-items:center;">
+    <div>
+        <h1>⚽ JumzysNotes</h1>
+        <p>Personal notes manager</p>
+    </div>
+    <div style="display:flex; gap:8px; align-items:center;">
         <button class="btn-new" onclick="showView('notes')">📝 Notes</button>
         <button class="btn-new" onclick="showView('datasets')">📊 Datasets</button>
     </div>
-    <div style="display:flex; gap:10px; align-items:center;">
+    <div style="display:flex; gap:8px; align-items:center;">
         <button class="btn-new" onclick="openStatsModal()">📈 Stats</button>
         <button class="btn-new" onclick="openCreateModal()" id="btn-new-note">+ New Note</button>
-        <button class="btn-new" onclick="openUploadModal()" id="btn-upload-dataset" style="display:none;">+ Upload Dataset</button>
+        <button class="btn-new" onclick="openUploadModal()" id="btn-upload-dataset" style="display:none;">+ Upload</button>
         <form action="/logout" method="post">
             <input type="hidden" name="_csrf" value="" id="csrf-token"/>
             <button type="submit" style="
                 background: none;
-                color: rgb(240, 230, 210);
-                border: 1px solid rgb(240, 230, 210);
-                padding: 10px 20px;
-                border-radius: 8px;
-                font-size: 1rem;
+                color: #888;
+                border: 1px solid #333;
+                padding: 9px 18px;
+                border-radius: 6px;
+                font-size: 0.9rem;
                 cursor: pointer;
             ">Logout</button>
         </form>
@@ -362,7 +396,7 @@
 <div class="modal-overlay" id="stats-modal-overlay" onclick="closeStatsModal(event)">
     <div class="modal">
         <button class="close-btn" onclick="closeStatsModal()">✕</button>
-        <h2>📊 Notes Statistics</h2>
+        <h2>📊 Statistics</h2>
         <div id="stats-content" style="margin-top:15px;">
             <div class="loading">Loading stats...</div>
         </div>
@@ -374,15 +408,14 @@
     <div class="modal">
         <button class="close-btn" onclick="closeUploadModal()">✕</button>
         <h2>Upload Dataset</h2>
-        <input id="upload-title" placeholder="Dataset title" />
-        <input id="upload-filename" placeholder="Filename (auto-filled on drop)" />
+        <input id="upload-title" placeholder="Dataset title (optional)" />
 
         <div id="drop-zone" style="
-            border: 2px dashed rgb(120, 140, 100);
+            border: 2px dashed #2a1010;
             border-radius: 8px;
             padding: 40px;
             text-align: center;
-            color: rgb(120, 140, 100);
+            color: #555;
             margin-bottom: 10px;
             cursor: pointer;
             transition: border-color 0.2s, background 0.2s;
@@ -395,28 +428,38 @@
             <div style="font-size:2rem; margin-bottom:10px;">📂</div>
             <div>Drop a CSV or JSON file here</div>
             <div style="font-size:0.8rem; margin-top:5px;">or click to browse</div>
+            <div style="font-size:0.75rem; margin-top:5px; color:#444;">Supports large files (GB+)</div>
             <input type="file" id="file-input" accept=".csv,.json"
                 style="display:none;" onchange="handleFileSelect(event)">
         </div>
 
-        <textarea id="upload-content" placeholder="File content will appear here, or paste manually..." rows="8"></textarea>
-        <button class="btn-save" onclick="submitUpload()">Upload Dataset</button>
+        <div id="upload-progress" style="display:none; margin-bottom:10px;">
+            <div style="color:#888; font-size:0.85rem; margin-bottom:6px;">Uploading...</div>
+            <div style="background:#0f0f0f; border-radius:4px; height:6px;">
+                <div id="progress-bar" style="
+                    background:#6b0f1a;
+                    height:6px;
+                    border-radius:4px;
+                    width:0%;
+                    transition:width 0.3s;
+                "></div>
+            </div>
+        </div>
+
+        <button class="btn-save" onclick="submitUpload()" id="upload-btn">Upload Dataset</button>
     </div>
 </div>
 
 <script>
     let allNotes = [];
     let editingFilename = null;
+    let selectedFile = null;
 
-    // Parse YAML header from note content
     function parseNote(filename, rawContent) {
         const lines = rawContent.split('\n');
-        const meta = { filename: filename, title: filename, created: '', modified: '', tags: [], body: '' };
+        const meta = { filename, title: filename, created: '', modified: '', tags: [], body: '' };
 
-        if (lines[0].trim() !== '---') {
-            meta.body = rawContent;
-            return meta;
-        }
+        if (lines[0].trim() !== '---') { meta.body = rawContent; return meta; }
 
         let yamlEnd = -1;
         for (let i = 1; i < lines.length; i++) {
@@ -443,7 +486,6 @@
         return meta;
     }
 
-    // VIEW SWITCHING
     function showView(view) {
         if (view === 'notes') {
             document.getElementById('notes-grid').style.display = 'grid';
@@ -462,7 +504,6 @@
         }
     }
 
-    // Fetch notes from API
     async function loadNotes() {
         try {
             const response = await fetch('/api/notes');
@@ -476,14 +517,12 @@
         }
     }
 
-    // Update stats bar
     function updateStats() {
         document.getElementById('total-notes').textContent = allNotes.length;
         const allTags = new Set(allNotes.flatMap(n => n.tags));
         document.getElementById('total-tags').textContent = allTags.size;
     }
 
-    // Render note cards
     function renderNotes(notes) {
         const grid = document.getElementById('notes-grid');
         if (notes.length === 0) {
@@ -493,15 +532,15 @@
 
         grid.innerHTML = notes.map((note, i) => `
             <div class="note-card">
-                <div onclick="openModal(${i})" style="cursor:pointer;">
+                <div onclick="openModal(${i})">
                     <div class="note-title">${note.title}</div>
                     <div class="note-meta">
-                        ${note.modified ? 'Modified: ' + note.modified.substring(0, 10) : ''}
+                        ${note.modified ? 'Modified ' + note.modified.substring(0, 10) : ''}
                     </div>
                     <div class="note-tags">
                         ${note.tags.map(t => `<span class="tag">${t}</span>`).join('')}
                     </div>
-                    ${note.body ? `<div class="note-preview">${note.body.substring(0, 100)}...</div>` : ''}
+                    ${note.body ? `<div class="note-preview">${note.body.substring(0, 120)}...</div>` : ''}
                 </div>
                 <div class="note-actions">
                     <button class="btn-edit" onclick="openEditModal(${i})">✏️ Edit</button>
@@ -511,7 +550,6 @@
         `).join('');
     }
 
-    // Filter notes by search
     function filterNotes() {
         const keyword = document.getElementById('search-input').value.toLowerCase();
         const filtered = allNotes.filter(n =>
@@ -522,7 +560,6 @@
         renderNotes(filtered);
     }
 
-    // READ modal
     function openModal(index) {
         const note = allNotes[index];
         document.getElementById('modal-title').textContent = note.title;
@@ -538,7 +575,6 @@
         }
     }
 
-    // CREATE modal
     function openCreateModal() {
         document.getElementById('create-title').value = '';
         document.getElementById('create-tags').value = '';
@@ -565,15 +601,10 @@
             body: JSON.stringify({ title, tags, content })
         });
 
-        if (response.ok) {
-            closeCreateModal();
-            loadNotes();
-        } else {
-            alert('Error creating note.');
-        }
+        if (response.ok) { closeCreateModal(); loadNotes(); }
+        else { alert('Error creating note.'); }
     }
 
-    // EDIT modal
     function openEditModal(index) {
         const note = allNotes[index];
         editingFilename = note.filename;
@@ -600,31 +631,19 @@
             body: JSON.stringify({ title, tags, content })
         });
 
-        if (response.ok) {
-            closeEditModal();
-            loadNotes();
-        } else {
-            alert('Error updating note.');
-        }
+        if (response.ok) { closeEditModal(); loadNotes(); }
+        else { alert('Error updating note.'); }
     }
 
-    // DELETE note
     async function confirmDelete(index) {
         const note = allNotes[index];
         if (!confirm(`Delete "${note.title}"?`)) return;
 
-        const response = await fetch(`/api/notes/${note.filename}`, {
-            method: 'DELETE'
-        });
-
-        if (response.ok) {
-            loadNotes();
-        } else {
-            alert('Error deleting note.');
-        }
+        const response = await fetch(`/api/notes/${note.filename}`, { method: 'DELETE' });
+        if (response.ok) { loadNotes(); }
+        else { alert('Error deleting note.'); }
     }
 
-    // DATASETS
     async function loadDatasets() {
         const grid = document.getElementById('datasets-grid');
         grid.innerHTML = '<div class="loading">Loading datasets...</div>';
@@ -639,17 +658,20 @@
             }
 
             grid.innerHTML = datasets.map(d => `
-                <div class="note-card" style="margin-bottom:16px;">
-                    <div class="note-title" onclick="window.location.href='/dataset.html?file=${d.filename}'"
-                        style="cursor:pointer;">
+                <div class="note-card" style="margin-bottom:12px;">
+                    <div class="note-title" onclick="window.location.href='/dataset.html?file=${d.filename}'">
                         📄 ${d.filename}
                     </div>
-                    <div class="note-meta">Size: ${Math.round(d.size / 1024 * 10) / 10} KB</div>
-                    <div class="note-actions" style="margin-top:12px;">
+                    <div class="note-meta">
+                        ${Math.round(d.size / 1024 * 10) / 10} KB
+                    </div>
+                    <div class="note-actions" style="margin-top:10px;">
                         <button class="btn-edit" onclick="window.location.href='/dataset.html?file=${d.filename}'">
-                            👁️ View Full
+                            👁️ View
                         </button>
-                        <button class="btn-delete" onclick="confirmDeleteDataset('${d.filename}')">🗑️ Delete</button>
+                        <button class="btn-delete" onclick="confirmDeleteDataset('${d.filename}')">
+                            🗑️ Delete
+                        </button>
                     </div>
                 </div>
             `).join('');
@@ -660,27 +682,21 @@
 
     async function confirmDeleteDataset(filename) {
         if (!confirm(`Delete dataset "${filename}"?`)) return;
-
-        const response = await fetch(`/api/datasets/${filename}`, {
-            method: 'DELETE'
-        });
-
-        if (response.ok) {
-            loadDatasets();
-        } else {
-            alert('Error deleting dataset.');
-        }
+        const response = await fetch(`/api/datasets/${filename}`, { method: 'DELETE' });
+        if (response.ok) { loadDatasets(); }
+        else { alert('Error deleting dataset.'); }
     }
 
-    // UPLOAD modal
     function openUploadModal() {
+        selectedFile = null;
         document.getElementById('upload-title').value = '';
-        document.getElementById('upload-filename').value = '';
-        document.getElementById('upload-content').value = '';
+        document.getElementById('upload-progress').style.display = 'none';
+        document.getElementById('upload-btn').disabled = false;
         document.getElementById('drop-zone').innerHTML = `
             <div style="font-size:2rem; margin-bottom:10px;">📂</div>
             <div>Drop a CSV or JSON file here</div>
             <div style="font-size:0.8rem; margin-top:5px;">or click to browse</div>
+            <div style="font-size:0.75rem; margin-top:5px; color:#444;">Supports large files (GB+)</div>
             <input type="file" id="file-input" accept=".csv,.json"
                 style="display:none;" onchange="handleFileSelect(event)">
         `;
@@ -693,48 +709,16 @@
         }
     }
 
-    async function submitUpload() {
-        const title = document.getElementById('upload-title').value.trim();
-        const filename = document.getElementById('upload-filename').value.trim();
-        const content = document.getElementById('upload-content').value.trim();
-
-        if (!filename || !content) {
-            alert('Filename and content are required!');
-            return;
-        }
-
-        const response = await fetch('/api/datasets', {
-            method: 'POST',
-            headers: { 'Content-Type': 'application/json' },
-            body: JSON.stringify({ title, filename, content })
-        });
-
-        const data = await response.json();
-
-        if (response.ok) {
-            closeUploadModal();
-            loadDatasets();
-            alert(`✅ Uploaded successfully!\n${data.rowCount} rows × ${data.colCount} columns`);
-        } else {
-            if (data.details && data.details.length > 0) {
-                alert('❌ Validation failed:\n\n' + data.details.join('\n'));
-            } else {
-                alert('❌ Error: ' + (data.error || 'Upload failed'));
-            }
-        }
-    }
-
-    // DRAG AND DROP
     function handleDragOver(event) {
         event.preventDefault();
         const zone = document.getElementById('drop-zone');
-        zone.style.borderColor = 'rgb(240, 230, 210)';
-        zone.style.background = 'rgb(10, 45, 30)';
+        zone.style.borderColor = '#6b0f1a';
+        zone.style.background = '#0f0505';
     }
 
     function handleDragLeave(event) {
         const zone = document.getElementById('drop-zone');
-        zone.style.borderColor = 'rgb(120, 140, 100)';
+        zone.style.borderColor = '#2a1010';
         zone.style.background = 'none';
     }
 
@@ -756,25 +740,68 @@
             return;
         }
 
-        document.getElementById('upload-filename').value = file.name;
-        document.getElementById('upload-title').value = file.name.replace(/\.[^/.]+$/, '');
+        selectedFile = file;
+        const sizeMB = Math.round(file.size / 1024 / 1024 * 10) / 10;
 
         document.getElementById('drop-zone').innerHTML = `
             <div style="font-size:2rem; margin-bottom:10px;">✅</div>
-            <div style="color:rgb(240,230,210);">${file.name}</div>
-            <div style="font-size:0.8rem; margin-top:5px; color:rgb(120,140,100);">
-                ${Math.round(file.size / 1024 * 10) / 10} KB
-            </div>
+            <div style="color:#c9a84c;">${file.name}</div>
+            <div style="font-size:0.85rem; margin-top:5px; color:#666;">${sizeMB} MB — ready to upload</div>
         `;
 
-        const reader = new FileReader();
-        reader.onload = (e) => {
-            document.getElementById('upload-content').value = e.target.result;
-        };
-        reader.readAsText(file);
+        if (!document.getElementById('upload-title').value) {
+            document.getElementById('upload-title').value = file.name.replace(/\.[^/.]+$/, '');
+        }
     }
 
-    // STATS modal
+    async function submitUpload() {
+        if (!selectedFile) { alert('Please select a file first!'); return; }
+
+        const title = document.getElementById('upload-title').value.trim();
+        const btn = document.getElementById('upload-btn');
+        const progress = document.getElementById('upload-progress');
+        const bar = document.getElementById('progress-bar');
+
+        btn.disabled = true;
+        progress.style.display = 'block';
+        bar.style.width = '10%';
+
+        const formData = new FormData();
+        formData.append('file', selectedFile);
+        formData.append('title', title);
+
+        try {
+            bar.style.width = '40%';
+
+            const response = await fetch('/api/datasets/upload', {
+                method: 'POST',
+                body: formData
+            });
+
+            bar.style.width = '90%';
+            const data = await response.json();
+
+            if (response.ok) {
+                bar.style.width = '100%';
+                setTimeout(() => {
+                    closeUploadModal();
+                    loadDatasets();
+                    const rows = data.rowCount >= 0 ? `${data.rowCount} rows` : 'unknown rows';
+                    const size = Math.round(data.size / 1024 / 1024 * 10) / 10;
+                    alert(`✅ Uploaded!\n${rows} — ${size} MB`);
+                }, 300);
+            } else {
+                progress.style.display = 'none';
+                btn.disabled = false;
+                alert('❌ Error: ' + (data.error || 'Upload failed'));
+            }
+        } catch (err) {
+            progress.style.display = 'none';
+            btn.disabled = false;
+            alert('❌ Upload failed: ' + err.message);
+        }
+    }
+
     async function openStatsModal() {
         document.getElementById('stats-modal-overlay').classList.add('active');
         document.getElementById('stats-content').innerHTML =
@@ -785,44 +812,44 @@
             const stats = await response.json();
 
             document.getElementById('stats-content').innerHTML = `
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:16px; margin-bottom:20px;">
-                    <div style="background:rgb(10,45,30); padding:20px; border-radius:8px; text-align:center;">
-                        <div style="font-size:2rem; font-weight:bold; color:rgb(240,230,210);">${stats.totalNotes}</div>
-                        <div style="color:rgb(120,140,100); font-size:0.85rem;">Total Notes</div>
+                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
+                    <div style="background:#0f0f0f; padding:18px; border-radius:8px; text-align:center; border:1px solid #2a1010;">
+                        <div style="font-size:2rem; font-weight:bold; color:#c9a84c;">${stats.totalNotes}</div>
+                        <div style="color:#666; font-size:0.82rem;">Total Notes</div>
                     </div>
-                    <div style="background:rgb(10,45,30); padding:20px; border-radius:8px; text-align:center;">
-                        <div style="font-size:2rem; font-weight:bold; color:rgb(240,230,210);">${stats.totalTags}</div>
-                        <div style="color:rgb(120,140,100); font-size:0.85rem;">Unique Tags</div>
+                    <div style="background:#0f0f0f; padding:18px; border-radius:8px; text-align:center; border:1px solid #2a1010;">
+                        <div style="font-size:2rem; font-weight:bold; color:#c9a84c;">${stats.totalTags}</div>
+                        <div style="color:#666; font-size:0.82rem;">Unique Tags</div>
                     </div>
-                    <div style="background:rgb(10,45,30); padding:20px; border-radius:8px; text-align:center;">
-                        <div style="font-size:2rem; font-weight:bold; color:rgb(240,230,210);">${stats.totalWords}</div>
-                        <div style="color:rgb(120,140,100); font-size:0.85rem;">Total Words</div>
+                    <div style="background:#0f0f0f; padding:18px; border-radius:8px; text-align:center; border:1px solid #2a1010;">
+                        <div style="font-size:2rem; font-weight:bold; color:#c9a84c;">${stats.totalWords}</div>
+                        <div style="color:#666; font-size:0.82rem;">Total Words</div>
                     </div>
-                    <div style="background:rgb(10,45,30); padding:20px; border-radius:8px; text-align:center;">
-                        <div style="font-size:2rem; font-weight:bold; color:rgb(240,230,210);">${stats.avgWordsPerNote}</div>
-                        <div style="color:rgb(120,140,100); font-size:0.85rem;">Avg Words/Note</div>
+                    <div style="background:#0f0f0f; padding:18px; border-radius:8px; text-align:center; border:1px solid #2a1010;">
+                        <div style="font-size:2rem; font-weight:bold; color:#c9a84c;">${stats.avgWordsPerNote}</div>
+                        <div style="color:#666; font-size:0.82rem;">Avg Words/Note</div>
                     </div>
                 </div>
 
                 ${stats.topTags && stats.topTags.length > 0 ? `
-                    <div style="background:rgb(10,45,30); padding:20px; border-radius:8px; margin-bottom:16px;">
-                        <div style="color:rgb(240,230,210); font-weight:600; margin-bottom:12px;">Top Tags</div>
+                    <div style="background:#0f0f0f; padding:18px; border-radius:8px; margin-bottom:12px; border:1px solid #2a1010;">
+                        <div style="color:#c9a84c; font-weight:600; margin-bottom:12px; font-size:0.9rem;">Top Tags</div>
                         ${stats.topTags.map(t => `
-                            <div style="display:flex; justify-content:space-between; margin-bottom:8px;">
+                            <div style="display:flex; justify-content:space-between; margin-bottom:8px; align-items:center;">
                                 <span class="tag">${t.tag}</span>
-                                <span style="color:rgb(120,140,100); font-size:0.85rem;">${t.count} note${t.count > 1 ? 's' : ''}</span>
+                                <span style="color:#555; font-size:0.82rem;">${t.count} note${t.count > 1 ? 's' : ''}</span>
                             </div>
                         `).join('')}
                     </div>
                 ` : ''}
 
-                <div style="background:rgb(10,45,30); padding:20px; border-radius:8px;">
-                    <div style="color:rgb(240,230,210); font-weight:600; margin-bottom:12px;">Notes</div>
-                    <div style="color:rgb(120,140,100); font-size:0.85rem; margin-bottom:6px;">
-                        Newest: <span style="color:rgb(240,230,210);">${stats.newestNote || 'N/A'}</span>
+                <div style="background:#0f0f0f; padding:18px; border-radius:8px; border:1px solid #2a1010;">
+                    <div style="color:#c9a84c; font-weight:600; margin-bottom:10px; font-size:0.9rem;">Recent Activity</div>
+                    <div style="color:#555; font-size:0.82rem; margin-bottom:6px;">
+                        Newest: <span style="color:#bbb;">${stats.newestNote || 'N/A'}</span>
                     </div>
-                    <div style="color:rgb(120,140,100); font-size:0.85rem;">
-                        Oldest: <span style="color:rgb(240,230,210);">${stats.oldestNote || 'N/A'}</span>
+                    <div style="color:#555; font-size:0.82rem;">
+                        Oldest: <span style="color:#bbb;">${stats.oldestNote || 'N/A'}</span>
                     </div>
                 </div>
             `;
@@ -838,7 +865,6 @@
         }
     }
 
-    // Escape key closes any open modal
     document.addEventListener('keydown', e => {
         if (e.key === 'Escape') {
             closeModal();
@@ -849,7 +875,6 @@
         }
     });
 
-    // Fetch CSRF token for logout
     async function fetchCsrfToken() {
         const response = await fetch('/api/csrf');
         const data = await response.json();
