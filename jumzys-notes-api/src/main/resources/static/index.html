@@ -6,427 +6,733 @@
     <title>JumzysNotes</title>
     <script src="https://cdnjs.cloudflare.com/ajax/libs/marked/9.1.6/marked.min.js"></script>
     <style>
-        * { margin: 0; padding: 0; box-sizing: border-box; }
+        /* ── TOKENS ─────────────────────────────────────────── */
+        :root {
+            /* Warm dark neutrals */
+            --color-bg:           oklch(11% 0.008 65);
+            --color-surface:      oklch(17% 0.012 62);
+            --color-surface-2:    oklch(22% 0.014 60);
+            --color-border:       oklch(28% 0.016 60);
+            --color-text-dim:     oklch(50% 0.008 68);
+            --color-text-body:    oklch(82% 0.007 72);
+            --color-text-display: oklch(93% 0.005 72);
+            /* Primary — warm amber */
+            --color-amber:        oklch(75% 0.13 75);
+            --color-amber-dim:    oklch(60% 0.10 75);
+            --color-amber-glow:   oklch(75% 0.13 75 / 0.15);
+            /* Secondary — dusty mauve (tags) */
+            --color-mauve:        oklch(62% 0.09 350);
+            --color-mauve-bg:     oklch(22% 0.05 350);
+            --color-mauve-border: oklch(30% 0.07 350);
+            /* Tertiary — muted sage (datasets) */
+            --color-sage:         oklch(58% 0.06 150);
+            --color-sage-bg:      oklch(17% 0.03 150);
+            --color-sage-border:  oklch(26% 0.05 150);
+            --color-sage-glow:    oklch(58% 0.06 150 / 0.15);
+            /* Typography */
+            --font-display: Georgia, 'Times New Roman', serif;
+            --font-body:    -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif;
+            --text-xs:   0.72rem;
+            --text-sm:   0.82rem;
+            --text-base: 0.9rem;
+            --text-md:   1rem;
+            --text-lg:   1.3rem;
+            --text-xl:   1.7rem;
+            /* Spacing (4pt base) */
+            --space-1: 4px;
+            --space-2: 8px;
+            --space-3: 12px;
+            --space-4: 16px;
+            --space-6: 24px;
+            --space-8: 32px;
+            --space-12: 48px;
+            /* Motion */
+            --ease-out: cubic-bezier(0.25, 1, 0.5, 1);
+            --ease-in:  cubic-bezier(0.5, 0, 0.75, 0);
+            --dur-fast:  150ms;
+            --dur-base:  220ms;
+            --dur-modal: 300ms;
+        }
 
+        /* ── RESET ──────────────────────────────────────────── */
+        *, *::before, *::after { margin: 0; padding: 0; box-sizing: border-box; }
+
+        /* ── BASE ───────────────────────────────────────────── */
         body {
-            font-family: -apple-system, BlinkMacSystemFont, "Segoe UI", sans-serif;
-            background: #0f0f0f;
-            color: #d4d4d4;
+            font-family: var(--font-body);
+            background: var(--color-bg);
+            color: var(--color-text-body);
             min-height: 100vh;
-            position: relative;
+            -webkit-font-smoothing: antialiased;
+            font-kerning: normal;
         }
 
-        /* Left decorative column */
-        body::before {
-            content: '';
-            position: fixed;
-            left: 0;
-            top: 0;
-            width: calc((100vw - 960px) / 2);
-            height: 100%;
-            background:
-                repeating-linear-gradient(
-                    45deg,
-                    transparent,
-                    transparent 30px,
-                    rgba(107, 15, 26, 0.08) 30px,
-                    rgba(107, 15, 26, 0.08) 32px
-                ),
-                repeating-linear-gradient(
-                    -45deg,
-                    transparent,
-                    transparent 30px,
-                    rgba(107, 15, 26, 0.05) 30px,
-                    rgba(107, 15, 26, 0.05) 32px
-                );
-            pointer-events: none;
-            z-index: 0;
-        }
-
-        /* Right decorative column */
-        body::after {
-            content: '';
-            position: fixed;
-            right: 0;
-            top: 0;
-            width: calc((100vw - 960px) / 2);
-            height: 100%;
-            background:
-                repeating-linear-gradient(
-                    45deg,
-                    transparent,
-                    transparent 30px,
-                    rgba(107, 15, 26, 0.08) 30px,
-                    rgba(107, 15, 26, 0.08) 32px
-                ),
-                repeating-linear-gradient(
-                    -45deg,
-                    transparent,
-                    transparent 30px,
-                    rgba(107, 15, 26, 0.05) 30px,
-                    rgba(107, 15, 26, 0.05) 32px
-                );
-            pointer-events: none;
-            z-index: 0;
-        }
-
+        /* ── HEADER ─────────────────────────────────────────── */
         header {
-            background: #1a0a0a;
-            padding: 20px 40px;
-            border-bottom: 2px solid #6b0f1a;
+            background: var(--color-surface);
+            border-bottom: 1px solid var(--color-border);
+            padding: var(--space-4) var(--space-8);
             display: flex;
             align-items: center;
             justify-content: space-between;
+            gap: var(--space-4);
+            position: sticky;
+            top: 0;
+            z-index: 10;
         }
 
-        header h1 {
-            font-size: 1.8rem;
-            color: #c9a84c;
-            letter-spacing: 2px;
-            font-weight: 700;
+        .header-brand h1 {
+            font-family: var(--font-display);
+            font-size: var(--text-xl);
+            color: var(--color-amber);
+            font-weight: 400;
+            letter-spacing: -0.01em;
+            line-height: 1;
         }
 
-        header p { color: #888; font-size: 0.85rem; margin-top: 2px; }
-
-        .container {
-            max-width: 960px;
-            margin: 40px auto;
-            padding: 0 20px;
-            position: relative;
-            z-index: 2;
+        .header-stats {
+            font-size: var(--text-xs);
+            color: var(--color-text-dim);
+            margin-top: 3px;
         }
 
-        .stats-bar {
-            background: #1a0a0a;
-            border-radius: 8px;
-            padding: 15px 20px;
-            margin-bottom: 30px;
+        .header-nav {
             display: flex;
-            gap: 30px;
-            border: 1px solid #2a1010;
+            gap: 2px;
         }
 
-        .stat { text-align: center; }
-        .stat .number { font-size: 1.5rem; font-weight: bold; color: #c9a84c; }
-        .stat .label { font-size: 0.8rem; color: #888; }
-
-        .search-bar { margin-bottom: 20px; }
-
-        .search-bar input {
-            width: 100%;
-            padding: 12px 16px;
-            background: #1a0a0a;
-            border: 1px solid #2a1010;
-            border-radius: 8px;
-            color: #d4d4d4;
-            font-size: 1rem;
-            outline: none;
+        .btn-nav {
+            background: none;
+            border: none;
+            color: var(--color-text-dim);
+            font-family: var(--font-body);
+            font-size: var(--text-sm);
+            padding: var(--space-2) var(--space-3);
+            border-radius: var(--space-2);
+            cursor: pointer;
+            transition: color var(--dur-fast) var(--ease-out),
+                        background var(--dur-fast) var(--ease-out);
         }
 
-        .search-bar input:focus { border-color: #6b0f1a; }
-        .search-bar input::placeholder { color: #555; }
+        .btn-nav:hover { color: var(--color-text-body); background: var(--color-surface-2); }
+        .btn-nav.active { color: var(--color-amber); }
 
-        .notes-grid { display: grid; gap: 12px; }
-
-        .note-card {
-            background: #1a0a0a;
-            border: 1px solid #2a1010;
-            border-radius: 8px;
-            padding: 18px 20px;
-            transition: border-color 0.2s, transform 0.1s;
+        .header-actions {
+            display: flex;
+            align-items: center;
+            gap: var(--space-2);
+            flex-shrink: 0;
         }
 
-        .note-card:hover { border-color: #6b0f1a; transform: translateY(-1px); }
+        @media (max-width: 640px) {
+            header { padding: var(--space-3) var(--space-4); }
+            .header-brand h1 { font-size: var(--text-lg); }
+            .header-stats { display: none; }
+            .btn-ghost.stats-btn { display: none; }
+        }
 
-        .note-title {
-            font-size: 1rem;
+        .btn-ghost {
+            background: none;
+            border: 1px solid var(--color-border);
+            color: var(--color-text-dim);
+            font-family: var(--font-body);
+            font-size: var(--text-sm);
+            padding: var(--space-2) var(--space-3);
+            border-radius: var(--space-2);
+            cursor: pointer;
+            transition: border-color var(--dur-fast) var(--ease-out),
+                        color var(--dur-fast) var(--ease-out);
+        }
+
+        .btn-ghost:hover { border-color: var(--color-text-dim); color: var(--color-text-body); }
+
+        .btn-primary {
+            background: var(--color-amber);
+            border: none;
+            color: var(--color-bg);
+            font-family: var(--font-body);
+            font-size: var(--text-sm);
             font-weight: 600;
-            color: #e8e8e8;
-            margin-bottom: 6px;
+            padding: var(--space-2) var(--space-3);
+            border-radius: var(--space-2);
+            cursor: pointer;
+            transition: opacity var(--dur-fast) var(--ease-out);
+        }
+
+        .btn-primary:hover { opacity: 0.85; }
+
+        .btn-sage {
+            background: var(--color-sage);
+            border: none;
+            color: var(--color-bg);
+            font-family: var(--font-body);
+            font-size: var(--text-sm);
+            font-weight: 600;
+            padding: var(--space-2) var(--space-3);
+            border-radius: var(--space-2);
+            cursor: pointer;
+            transition: opacity var(--dur-fast) var(--ease-out);
+        }
+
+        .btn-sage:hover { opacity: 0.85; }
+
+        /* ── CONTAINER ──────────────────────────────────────── */
+        .container {
+            max-width: 860px;
+            margin: 0 auto;
+            padding: var(--space-8) var(--space-6);
+        }
+
+        /* ── SEARCH ROW ─────────────────────────────────────── */
+        .search-row {
+            display: flex;
+            gap: var(--space-3);
+            margin-bottom: var(--space-6);
+        }
+
+        .search-row input,
+        .search-row select {
+            background: var(--color-surface);
+            border: 1px solid var(--color-border);
+            border-radius: var(--space-2);
+            color: var(--color-text-body);
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            padding: var(--space-3) var(--space-4);
+            outline: none;
+            transition: border-color var(--dur-fast) var(--ease-out),
+                        box-shadow var(--dur-fast) var(--ease-out);
+        }
+
+        .search-row input { flex: 1; }
+        .search-row input::placeholder { color: var(--color-text-dim); }
+
+        .search-row input:focus,
+        .search-row select:focus {
+            border-color: var(--color-amber);
+            box-shadow: 0 0 0 2px var(--color-amber-glow);
+        }
+
+        .search-row select {
+            cursor: pointer;
+            appearance: none;
+            padding-right: var(--space-8);
+            background-image: url("data:image/svg+xml,%3Csvg xmlns='http://www.w3.org/2000/svg' width='10' height='6' fill='none' viewBox='0 0 10 6'%3E%3Cpath stroke='%23666' stroke-linecap='round' stroke-linejoin='round' stroke-width='1.5' d='M1 1l4 4 4-4'/%3E%3C/svg%3E");
+            background-repeat: no-repeat;
+            background-position: right var(--space-3) center;
+        }
+
+        .search-row select option { background: var(--color-surface-2); }
+
+        /* ── NOTES LIST ─────────────────────────────────────── */
+        .notes-list {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .note-item {
+            padding: var(--space-4) var(--space-3);
+            border-bottom: 1px solid var(--color-border);
+            border-radius: var(--space-2);
+            transition: background var(--dur-fast) var(--ease-out);
+        }
+
+        .note-item:first-child { border-top: 1px solid var(--color-border); }
+        .note-item:hover { background: var(--color-surface); }
+
+        .note-item-top {
+            display: flex;
+            justify-content: space-between;
+            align-items: flex-start;
+            gap: var(--space-3);
             cursor: pointer;
         }
 
-        .note-title:hover { color: #c9a84c; }
+        .note-title-text {
+            font-family: var(--font-display);
+            font-size: var(--text-md);
+            font-weight: 700;
+            color: var(--color-text-display);
+            transition: color var(--dur-fast) var(--ease-out);
+            text-wrap: balance;
+            line-height: 1.3;
+        }
 
-        .note-meta { font-size: 0.78rem; color: #666; margin-bottom: 8px; }
+        .note-item:hover .note-title-text { color: var(--color-amber); }
 
-        .note-tags { display: flex; flex-wrap: wrap; gap: 6px; }
+        .media-badge {
+            display: none;
+            background: var(--color-surface-2);
+            color: var(--color-text-dim);
+            border: 1px solid var(--color-border);
+            padding: 2px var(--space-2);
+            border-radius: 99px;
+            font-size: var(--text-xs);
+            white-space: nowrap;
+            flex-shrink: 0;
+            margin-top: 2px;
+        }
+
+        .note-meta-row {
+            display: flex;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: var(--space-2);
+            margin-top: var(--space-1);
+            cursor: pointer;
+        }
+
+        .note-date {
+            font-size: var(--text-xs);
+            color: var(--color-text-dim);
+        }
+
+        .meta-dot {
+            font-size: var(--text-xs);
+            color: var(--color-border);
+        }
+
+        .note-tags {
+            display: flex;
+            flex-wrap: wrap;
+            gap: var(--space-1);
+        }
 
         .tag {
-            background: #2a1010;
-            color: #c9a84c;
-            padding: 2px 10px;
-            border-radius: 12px;
-            font-size: 0.72rem;
-            border: 1px solid #3a1515;
+            background: var(--color-mauve-bg);
+            color: var(--color-mauve);
+            border: 1px solid var(--color-mauve-border);
+            padding: 1px var(--space-2);
+            border-radius: 99px;
+            font-size: var(--text-xs);
         }
 
         .note-preview {
-            font-size: 0.83rem;
-            color: #666;
-            margin-top: 8px;
-            line-height: 1.5;
-        }
-
-        .note-actions { display: flex; gap: 8px; margin-top: 12px; }
-
-        .btn-edit {
-            background: #2a1010;
-            color: #c9a84c;
-            border: 1px solid #3a1515;
-            padding: 5px 12px;
-            border-radius: 6px;
+            font-size: var(--text-sm);
+            color: var(--color-text-dim);
+            line-height: 1.55;
+            margin-top: var(--space-2);
             cursor: pointer;
-            font-size: 0.82rem;
+            text-wrap: pretty;
         }
 
-        .btn-edit:hover { background: #3a1515; border-color: #c9a84c; }
+        .note-actions {
+            display: flex;
+            gap: var(--space-2);
+            margin-top: var(--space-3);
+            opacity: 0;
+            transition: opacity var(--dur-fast) var(--ease-out);
+        }
 
-        .btn-delete {
-            background: #1a0505;
-            color: #cc4444;
-            border: 1px solid #2a0a0a;
-            padding: 5px 12px;
-            border-radius: 6px;
+        .note-item:hover .note-actions { opacity: 1; }
+
+        .btn-action {
+            background: none;
+            border: 1px solid var(--color-border);
+            color: var(--color-text-dim);
+            font-family: var(--font-body);
+            font-size: var(--text-xs);
+            padding: 3px var(--space-3);
+            border-radius: var(--space-2);
             cursor: pointer;
-            font-size: 0.82rem;
+            transition: border-color var(--dur-fast) var(--ease-out),
+                        color var(--dur-fast) var(--ease-out);
         }
 
-        .btn-delete:hover { background: #2a0a0a; border-color: #cc4444; }
+        .btn-action.edit:hover  { border-color: var(--color-amber); color: var(--color-amber); }
+        .btn-action.delete:hover { border-color: oklch(55% 0.14 20); color: oklch(65% 0.14 20); }
 
-        .btn-new {
-            background: #1a0a0a;
-            color: #c9a84c;
-            border: 1px solid #6b0f1a;
-            padding: 9px 18px;
-            border-radius: 6px;
-            font-size: 0.9rem;
+        .loading, .empty {
+            text-align: center;
+            padding: var(--space-12);
+            color: var(--color-text-dim);
+            font-size: var(--text-sm);
+        }
+
+        /* ── DATASET LIST ───────────────────────────────────── */
+        .dataset-list {
+            display: flex;
+            flex-direction: column;
+        }
+
+        .dataset-item {
+            padding: var(--space-4) var(--space-3);
+            border-bottom: 1px solid var(--color-sage-border);
+            border-radius: var(--space-2);
+            transition: background var(--dur-fast) var(--ease-out);
+        }
+
+        .dataset-item:first-child { border-top: 1px solid var(--color-sage-border); }
+        .dataset-item:hover { background: var(--color-sage-bg); }
+
+        .dataset-name {
+            font-family: var(--font-display);
+            font-size: var(--text-md);
+            color: var(--color-text-display);
             cursor: pointer;
-            transition: background 0.2s, border-color 0.2s;
+            transition: color var(--dur-fast) var(--ease-out);
+            font-weight: 700;
         }
 
-        .btn-new:hover { background: #2a1010; border-color: #c9a84c; }
+        .dataset-item:hover .dataset-name { color: var(--color-sage); }
 
+        .dataset-size {
+            font-size: var(--text-xs);
+            color: var(--color-text-dim);
+            margin-top: var(--space-1);
+            margin-bottom: var(--space-2);
+        }
+
+        .dataset-actions {
+            display: flex;
+            gap: var(--space-2);
+            opacity: 0;
+            transition: opacity var(--dur-fast) var(--ease-out);
+        }
+
+        .dataset-item:hover .dataset-actions { opacity: 1; }
+
+        .btn-view {
+            background: none;
+            border: 1px solid var(--color-sage-border);
+            color: var(--color-sage);
+            font-family: var(--font-body);
+            font-size: var(--text-xs);
+            padding: 3px var(--space-3);
+            border-radius: var(--space-2);
+            cursor: pointer;
+            transition: background var(--dur-fast) var(--ease-out);
+        }
+
+        .btn-view:hover { background: var(--color-sage-bg); }
+
+        /* ── MODAL SYSTEM ───────────────────────────────────── */
         .modal-overlay {
             display: none;
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.85);
+            inset: 0;
+            background: oklch(0% 0 0 / 0.72);
             z-index: 100;
             justify-content: center;
             align-items: center;
+            padding: var(--space-6);
         }
 
-        .modal-overlay.active { display: flex; }
+        .modal-overlay.active {
+            display: flex;
+            animation: backdrop-in var(--dur-modal) var(--ease-out);
+        }
+
+        .modal-overlay.closing {
+            animation: backdrop-out 230ms var(--ease-in) forwards;
+        }
+
+        @keyframes backdrop-in  { from { opacity: 0; } to { opacity: 1; } }
+        @keyframes backdrop-out { from { opacity: 1; } to { opacity: 0; } }
 
         .modal {
-            background: #1a0a0a;
-            border: 1px solid #2a1010;
-            border-radius: 10px;
-            padding: 28px 30px;
-            max-width: 680px;
-            width: 90%;
-            max-height: 85vh;
+            background: var(--color-surface-2);
+            border: 1px solid var(--color-border);
+            border-radius: var(--space-3);
+            padding: var(--space-8);
+            max-width: 700px;
+            width: 100%;
+            max-height: 88vh;
             overflow-y: auto;
             position: relative;
+            animation: modal-in var(--dur-modal) var(--ease-out);
+        }
+
+        .modal-overlay.closing .modal {
+            animation: modal-out 230ms var(--ease-in) forwards;
+        }
+
+        @keyframes modal-in {
+            from { opacity: 0; transform: translateY(12px); }
+            to   { opacity: 1; transform: translateY(0); }
+        }
+
+        @keyframes modal-out {
+            from { opacity: 1; transform: translateY(0); }
+            to   { opacity: 0; transform: translateY(6px); }
         }
 
         .modal h2 {
-            color: #c9a84c;
-            margin-bottom: 18px;
-            font-size: 1.3rem;
-            letter-spacing: 1px;
+            font-family: var(--font-display);
+            font-size: var(--text-lg);
+            color: var(--color-text-display);
+            font-weight: 400;
+            margin-bottom: var(--space-2);
+            text-wrap: balance;
+            padding-right: var(--space-8);
         }
 
-        .modal-meta { color: #666; font-size: 0.82rem; margin-bottom: 14px; }
+        .modal-meta {
+            font-size: var(--text-sm);
+            color: var(--color-text-dim);
+            margin-bottom: var(--space-6);
+        }
 
+        /* Markdown content */
         .modal-content {
-            line-height: 1.7;
-            font-size: 0.92rem;
-            color: #bbb;
+            line-height: 1.72;
+            font-size: var(--text-base);
+            color: var(--color-text-body);
         }
 
         .modal-content h1, .modal-content h2, .modal-content h3 {
-            color: #c9a84c;
-            margin: 16px 0 8px 0;
+            font-family: var(--font-display);
+            color: var(--color-text-display);
+            font-weight: 400;
+            margin: var(--space-6) 0 var(--space-3);
+            text-wrap: balance;
         }
 
-        .modal-content p { margin-bottom: 10px; }
+        .modal-content h1 { font-size: var(--text-lg); }
+        .modal-content h2 { font-size: 1.1rem; }
+        .modal-content h3 { font-size: var(--text-md); }
 
-        .modal-content ul, .modal-content ol {
-            margin: 8px 0 8px 20px;
-        }
-
-        .modal-content li { margin-bottom: 4px; }
+        .modal-content p { margin-bottom: var(--space-3); text-wrap: pretty; max-width: 65ch; }
+        .modal-content ul, .modal-content ol { margin: var(--space-2) 0 var(--space-3) var(--space-6); }
+        .modal-content li { margin-bottom: var(--space-1); }
 
         .modal-content code {
-            background: #0f0f0f;
-            color: #c9a84c;
-            padding: 2px 6px;
+            font-family: 'SF Mono', 'Fira Code', 'Consolas', monospace;
+            background: var(--color-bg);
+            color: var(--color-amber-dim);
+            padding: 1px 6px;
             border-radius: 4px;
-            font-size: 0.85rem;
+            font-size: 0.85em;
         }
 
         .modal-content pre {
-            background: #0f0f0f;
-            padding: 12px;
-            border-radius: 6px;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--space-2);
+            padding: var(--space-4);
             overflow-x: auto;
-            margin: 10px 0;
-            border: 1px solid #2a1010;
+            margin: var(--space-3) 0;
         }
+
+        .modal-content pre code { background: none; padding: 0; font-size: var(--text-sm); }
 
         .modal-content blockquote {
-            border-left: 3px solid #6b0f1a;
-            padding-left: 12px;
-            color: #888;
-            margin: 10px 0;
+            border-left: 2px solid var(--color-border);
+            padding-left: var(--space-4);
+            color: var(--color-text-dim);
+            margin: var(--space-3) 0;
         }
 
-        .modal-content a { color: #c9a84c; }
+        .modal-content a { color: var(--color-amber); }
+        .modal-content hr { border: none; border-top: 1px solid var(--color-border); margin: var(--space-6) 0; }
 
-        .modal-content hr {
-            border: none;
-            border-top: 1px solid #2a1010;
-            margin: 16px 0;
-        }
-
+        /* Form elements in modals */
         .modal input, .modal textarea {
             width: 100%;
-            padding: 10px 12px;
-            background: #0f0f0f;
-            border: 1px solid #2a1010;
-            border-radius: 6px;
-            color: #d4d4d4;
-            font-size: 0.92rem;
-            font-family: inherit;
-            margin-bottom: 10px;
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--space-2);
+            color: var(--color-text-body);
+            font-family: var(--font-body);
+            font-size: var(--text-base);
+            padding: var(--space-3) var(--space-4);
+            margin-bottom: var(--space-3);
             outline: none;
+            transition: border-color var(--dur-fast) var(--ease-out),
+                        box-shadow var(--dur-fast) var(--ease-out);
         }
 
-        .modal input:focus, .modal textarea:focus { border-color: #6b0f1a; }
-        .modal input::placeholder, .modal textarea::placeholder { color: #444; }
+        .modal input:focus, .modal textarea:focus {
+            border-color: var(--color-amber);
+            box-shadow: 0 0 0 2px var(--color-amber-glow);
+        }
+
+        .modal input::placeholder, .modal textarea::placeholder { color: var(--color-text-dim); }
+        .modal textarea { resize: vertical; line-height: 1.6; }
 
         .btn-save {
             width: 100%;
-            background: #6b0f1a;
-            color: #c9a84c;
-            border: 1px solid #8a1520;
-            padding: 10px;
-            border-radius: 6px;
-            font-size: 0.95rem;
+            background: var(--color-amber);
+            color: var(--color-bg);
+            border: none;
+            font-family: var(--font-body);
+            font-size: var(--text-sm);
+            font-weight: 600;
+            padding: var(--space-3) var(--space-4);
+            border-radius: var(--space-2);
             cursor: pointer;
-            margin-top: 5px;
-            letter-spacing: 0.5px;
+            margin-top: var(--space-2);
+            transition: opacity var(--dur-fast) var(--ease-out);
         }
 
-        .btn-save:hover { background: #8a1520; border-color: #c9a84c; }
+        .btn-save:hover { opacity: 0.85; }
+        .btn-save:disabled { opacity: 0.4; cursor: not-allowed; }
 
         .close-btn {
             position: absolute;
-            top: 14px; right: 18px;
+            top: var(--space-4);
+            right: var(--space-4);
             background: none;
             border: none;
-            color: #555;
-            font-size: 1.4rem;
+            color: var(--color-text-dim);
+            font-size: 1.1rem;
             cursor: pointer;
+            width: 30px;
+            height: 30px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: var(--space-2);
+            transition: color var(--dur-fast) var(--ease-out),
+                        background var(--dur-fast) var(--ease-out);
         }
 
-        .close-btn:hover { color: #c9a84c; }
+        .close-btn:hover { color: var(--color-text-body); background: var(--color-border); }
 
-        .loading { text-align: center; padding: 60px; color: #555; }
-        .empty { text-align: center; padding: 60px; color: #444; }
+        /* ── STATS MODAL ────────────────────────────────────── */
+        .stats-grid {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: var(--space-3);
+            margin-bottom: var(--space-4);
+        }
 
-        /* Media gallery */
+        .stat-card {
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--space-2);
+            padding: var(--space-4);
+        }
+
+        .stat-value {
+            font-family: var(--font-display);
+            font-size: 1.6rem;
+            color: var(--color-amber);
+            font-variant-numeric: tabular-nums;
+            line-height: 1;
+            margin-bottom: var(--space-1);
+        }
+
+        .stat-label {
+            font-size: var(--text-xs);
+            color: var(--color-text-dim);
+        }
+
+        .stats-section {
+            background: var(--color-bg);
+            border: 1px solid var(--color-border);
+            border-radius: var(--space-2);
+            padding: var(--space-4);
+            margin-bottom: var(--space-3);
+        }
+
+        .stats-section-title {
+            font-size: var(--text-xs);
+            color: var(--color-text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            margin-bottom: var(--space-3);
+        }
+
+        .top-tag-row {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            margin-bottom: var(--space-2);
+        }
+
+        .activity-line {
+            font-size: var(--text-sm);
+            color: var(--color-text-dim);
+            margin-bottom: var(--space-2);
+        }
+
+        .activity-line span { color: var(--color-text-body); }
+
+        /* ── MEDIA GALLERY ──────────────────────────────────── */
         .media-section {
-            margin-top: 20px;
-            padding-top: 16px;
-            border-top: 1px solid #2a1010;
+            margin-top: var(--space-6);
+            padding-top: var(--space-4);
+            border-top: 1px solid var(--color-border);
         }
 
         .media-section h3 {
-            color: #c9a84c;
-            font-size: 0.9rem;
-            margin-bottom: 12px;
-            letter-spacing: 0.5px;
+            font-size: var(--text-xs);
+            color: var(--color-text-dim);
+            text-transform: uppercase;
+            letter-spacing: 0.07em;
+            margin-bottom: var(--space-3);
         }
 
         .media-gallery {
             display: grid;
-            grid-template-columns: repeat(auto-fill, minmax(140px, 1fr));
-            gap: 10px;
-            margin-bottom: 12px;
+            grid-template-columns: repeat(auto-fill, minmax(110px, 1fr));
+            gap: var(--space-2);
+            margin-bottom: var(--space-3);
         }
 
         .media-item {
             position: relative;
-            border-radius: 6px;
+            border-radius: var(--space-2);
             overflow: hidden;
-            border: 1px solid #2a1010;
-            background: #0f0f0f;
+            border: 1px solid var(--color-border);
+            background: var(--color-bg);
         }
 
-        .media-item img {
+        .media-item img, .media-item video {
             width: 100%;
-            height: 100px;
+            height: 85px;
             object-fit: cover;
             display: block;
             cursor: pointer;
         }
 
-        .media-item video {
-            width: 100%;
-            height: 100px;
-            object-fit: cover;
-            display: block;
-        }
-
-        .media-item .media-delete {
+        .media-delete {
             position: absolute;
-            top: 4px; right: 4px;
-            background: rgba(0,0,0,0.7);
-            color: #cc4444;
+            top: 4px;
+            right: 4px;
+            background: oklch(0% 0 0 / 0.7);
+            color: oklch(65% 0.14 20);
             border: none;
             border-radius: 4px;
-            padding: 2px 6px;
-            font-size: 0.75rem;
+            padding: 2px 5px;
+            font-size: var(--text-xs);
             cursor: pointer;
             opacity: 0;
-            transition: opacity 0.2s;
+            transition: opacity var(--dur-fast) var(--ease-out);
         }
 
         .media-item:hover .media-delete { opacity: 1; }
 
-        .media-item .media-name {
-            font-size: 0.7rem;
-            color: #666;
-            padding: 4px 6px;
+        .media-name {
+            font-size: 0.65rem;
+            color: var(--color-text-dim);
+            padding: 3px var(--space-2);
             white-space: nowrap;
             overflow: hidden;
             text-overflow: ellipsis;
         }
 
         .media-upload-zone {
-            border: 2px dashed #2a1010;
-            border-radius: 6px;
-            padding: 16px;
+            border: 1px dashed var(--color-border);
+            border-radius: var(--space-2);
+            padding: var(--space-4);
             text-align: center;
-            color: #555;
+            color: var(--color-text-dim);
             cursor: pointer;
-            font-size: 0.85rem;
-            transition: border-color 0.2s;
+            font-size: var(--text-sm);
+            transition: border-color var(--dur-fast) var(--ease-out),
+                        color var(--dur-fast) var(--ease-out);
         }
 
-        .media-upload-zone:hover { border-color: #6b0f1a; color: #888; }
+        .media-upload-zone:hover { border-color: var(--color-amber); color: var(--color-text-body); }
 
-        /* Lightbox */
+        /* ── LIGHTBOX ───────────────────────────────────────── */
         .lightbox {
             display: none;
             position: fixed;
-            top: 0; left: 0;
-            width: 100%; height: 100%;
-            background: rgba(0,0,0,0.95);
+            inset: 0;
+            background: oklch(0% 0 0 / 0.95);
             z-index: 200;
             justify-content: center;
             align-items: center;
@@ -437,111 +743,105 @@
         .lightbox img {
             max-width: 90%;
             max-height: 90vh;
-            border-radius: 6px;
+            border-radius: var(--space-2);
         }
 
         .lightbox-close {
             position: absolute;
-            top: 20px; right: 30px;
-            color: #c9a84c;
-            font-size: 2rem;
+            top: var(--space-6);
+            right: var(--space-8);
+            color: var(--color-text-dim);
+            font-size: 1.4rem;
             cursor: pointer;
             background: none;
             border: none;
+            transition: color var(--dur-fast) var(--ease-out);
         }
 
-        ::-webkit-scrollbar { width: 6px; }
-        ::-webkit-scrollbar-track { background: #0f0f0f; }
-        ::-webkit-scrollbar-thumb { background: #2a1010; border-radius: 3px; }
-        ::-webkit-scrollbar-thumb:hover { background: #6b0f1a; }
+        .lightbox-close:hover { color: var(--color-text-body); }
+
+        /* ── UPLOAD MODAL ───────────────────────────────────── */
+        .drop-zone {
+            border: 1px dashed var(--color-border);
+            border-radius: var(--space-2);
+            padding: var(--space-8);
+            text-align: center;
+            color: var(--color-text-dim);
+            cursor: pointer;
+            font-size: var(--text-sm);
+            margin-bottom: var(--space-3);
+            transition: border-color var(--dur-fast) var(--ease-out),
+                        background var(--dur-fast) var(--ease-out);
+        }
+
+        .drop-zone:hover, .drop-zone.dragover {
+            border-color: var(--color-sage);
+            background: var(--color-sage-glow);
+        }
+
+        .drop-icon { font-size: 1.5rem; margin-bottom: var(--space-2); }
+        .drop-hint { font-size: var(--text-xs); margin-top: var(--space-1); }
+
+        .upload-progress { display: none; margin-bottom: var(--space-3); }
+
+        .progress-label { font-size: var(--text-xs); color: var(--color-text-dim); margin-bottom: var(--space-2); }
+
+        .progress-track {
+            background: var(--color-bg);
+            border-radius: 99px;
+            height: 3px;
+            overflow: hidden;
+        }
+
+        .progress-fill {
+            background: var(--color-sage);
+            height: 3px;
+            border-radius: 99px;
+            width: 0%;
+            transition: width 0.3s var(--ease-out);
+        }
+
+        /* ── SCROLLBAR ──────────────────────────────────────── */
+        ::-webkit-scrollbar { width: 5px; }
+        ::-webkit-scrollbar-track { background: transparent; }
+        ::-webkit-scrollbar-thumb { background: var(--color-border); border-radius: 99px; }
+        ::-webkit-scrollbar-thumb:hover { background: var(--color-text-dim); }
+
+        /* ── REDUCED MOTION ─────────────────────────────────── */
+        @media (prefers-reduced-motion: reduce) {
+            *, *::before, *::after {
+                animation-duration: 0.01ms !important;
+                transition-duration: 0.01ms !important;
+            }
+        }
     </style>
 </head>
 <body>
 
 <header>
-    <div>
-        <h1>⚽ JumzysNotes</h1>
-        <p>Personal notes manager</p>
+    <div class="header-brand">
+        <h1>JumzysNotes</h1>
+        <div class="header-stats" id="header-stats">—</div>
     </div>
-    <div style="display:flex; gap:8px; align-items:center;">
-        <button class="btn-new" onclick="showView('notes')">📝 Notes</button>
-        <button class="btn-new" onclick="showView('datasets')">📊 Datasets</button>
-    </div>
-    <div style="display:flex; gap:8px; align-items:center;">
-        <button class="btn-new" onclick="openStatsModal()">📈 Stats</button>
-        <button class="btn-new" onclick="openCreateModal()" id="btn-new-note">+ New Note</button>
-        <button class="btn-new" onclick="openUploadModal()" id="btn-upload-dataset" style="display:none;">+ Upload</button>
-        <form action="/logout" method="post">
+    <nav class="header-nav">
+        <button class="btn-nav active" id="nav-notes" onclick="showView('notes')">Notes</button>
+        <button class="btn-nav" id="nav-datasets" onclick="showView('datasets')">Datasets</button>
+    </nav>
+    <div class="header-actions">
+        <button class="btn-ghost stats-btn" onclick="openStatsModal()">Stats</button>
+        <button class="btn-primary" id="btn-new-note" onclick="openCreateModal()">+ New Note</button>
+        <button class="btn-sage" id="btn-upload-dataset" style="display:none;" onclick="openUploadModal()">+ Upload</button>
+        <form action="/logout" method="post" style="display:inline;">
             <input type="hidden" name="_csrf" value="" id="csrf-token"/>
-            <button type="submit" style="
-                background:none; color:#888; border:1px solid #333;
-                padding:9px 18px; border-radius:6px; font-size:0.9rem; cursor:pointer;">
-                Logout
-            </button>
+            <button type="submit" class="btn-ghost">Logout</button>
         </form>
     </div>
 </header>
 
 <div class="container">
-    <!-- Left accent bar -->
-    <div style="
-        position: fixed;
-        left: calc((100vw - 960px) / 2 - 3px);
-        top: 80px;
-        width: 3px;
-        height: calc(100vh - 80px);
-        background: linear-gradient(to bottom,
-            transparent,
-            rgba(107, 15, 26, 0.4) 20%,
-            rgba(201, 168, 76, 0.3) 50%,
-            rgba(107, 15, 26, 0.4) 80%,
-            transparent);
-        pointer-events: none;
-        z-index: 0;
-    "></div>
-    <!-- Right accent bar -->
-    <div style="
-        position: fixed;
-        right: calc((100vw - 960px) / 2 - 3px);
-        top: 80px;
-        width: 3px;
-        height: calc(100vh - 80px);
-        background: linear-gradient(to bottom,
-            transparent,
-            rgba(107, 15, 26, 0.4) 20%,
-            rgba(201, 168, 76, 0.3) 50%,
-            rgba(107, 15, 26, 0.4) 80%,
-            transparent);
-        pointer-events: none;
-        z-index: 0;
-    ">
-    </div>
-
-    <div class="stats-bar">
-        <div class="stat">
-            <div class="number" id="total-notes">-</div>
-            <div class="label">Notes</div>
-        </div>
-        <div class="stat">
-            <div class="number" id="total-tags">-</div>
-            <div class="label">Tags</div>
-        </div>
-    </div>
-
-    <div class="search-bar" style="display:flex; gap:10px;">
-        <input type="text" id="search-input" placeholder="Search notes..."
-            oninput="filterNotes()" style="flex:1;">
-        <select id="sort-select" onchange="sortNotes()"
-            style="
-                background:#1a0a0a;
-                color:#c9a84c;
-                border:1px solid #2a1010;
-                border-radius:8px;
-                padding:12px 16px;
-                font-size:0.9rem;
-                cursor:pointer;
-                outline:none;
-            ">
+    <div class="search-row" id="search-row">
+        <input type="text" id="search-input" placeholder="Search notes…" oninput="filterNotes()">
+        <select id="sort-select" onchange="sortNotes()">
             <option value="modified-desc">Newest first</option>
             <option value="modified-asc">Oldest first</option>
             <option value="title-asc">A → Z</option>
@@ -549,14 +849,13 @@
         </select>
     </div>
 
-    <div class="notes-grid" id="notes-grid">
-        <div class="loading">Loading your notes...</div>
+    <div class="notes-list" id="notes-grid">
+        <div class="loading">Loading…</div>
     </div>
 
     <div id="datasets-grid" style="display:none;">
-        <div class="loading">Loading datasets...</div>
+        <div class="loading">Loading…</div>
     </div>
-
 </div>
 
 <!-- Read Modal -->
@@ -566,9 +865,8 @@
         <h2 id="modal-title"></h2>
         <div class="modal-meta" id="modal-meta"></div>
         <div class="modal-content" id="modal-content"></div>
-        <!-- Media section inside read modal -->
         <div class="media-section" id="modal-media-section" style="display:none;">
-            <h3>📎 Attachments</h3>
+            <h3>Attachments</h3>
             <div class="media-gallery" id="modal-media-gallery"></div>
             <div class="media-upload-zone" onclick="document.getElementById('media-file-input').click()">
                 + Add photo or video
@@ -579,7 +877,7 @@
     </div>
 </div>
 
-<!-- Lightbox for full size images -->
+<!-- Lightbox -->
 <div class="lightbox" id="lightbox" onclick="closeLightbox()">
     <button class="lightbox-close" onclick="closeLightbox()">✕</button>
     <img id="lightbox-img" src="" alt="">
@@ -592,7 +890,7 @@
         <h2>New Note</h2>
         <input id="create-title" placeholder="Title" />
         <input id="create-tags" placeholder="Tags (comma separated)" />
-        <textarea id="create-content" placeholder="Write your note here..." rows="8"></textarea>
+        <textarea id="create-content" placeholder="Write your note here…" rows="9"></textarea>
         <button class="btn-save" onclick="submitCreate()">Save Note</button>
     </div>
 </div>
@@ -604,7 +902,7 @@
         <h2>Edit Note</h2>
         <input id="edit-title" placeholder="Title" />
         <input id="edit-tags" placeholder="Tags (comma separated)" />
-        <textarea id="edit-content" placeholder="Note content..." rows="8"></textarea>
+        <textarea id="edit-content" placeholder="Note content…" rows="9"></textarea>
         <button class="btn-save" onclick="submitEdit()">Save Changes</button>
     </div>
 </div>
@@ -613,41 +911,36 @@
 <div class="modal-overlay" id="stats-modal-overlay" onclick="closeStatsModal(event)">
     <div class="modal">
         <button class="close-btn" onclick="closeStatsModal()">✕</button>
-        <h2>📊 Statistics</h2>
-        <div id="stats-content" style="margin-top:15px;">
-            <div class="loading">Loading stats...</div>
-        </div>
+        <h2>Statistics</h2>
+        <div id="stats-content"><div class="loading">Loading…</div></div>
     </div>
 </div>
 
-<!-- Upload Dataset Modal -->
+<!-- Upload Modal -->
 <div class="modal-overlay" id="upload-modal-overlay" onclick="closeUploadModal(event)">
     <div class="modal">
         <button class="close-btn" onclick="closeUploadModal()">✕</button>
         <h2>Upload Dataset</h2>
         <input id="upload-title" placeholder="Dataset title (optional)" />
-        <div id="drop-zone" style="
-            border:2px dashed #2a1010; border-radius:8px; padding:40px;
-            text-align:center; color:#555; margin-bottom:10px; cursor:pointer;
-            transition:border-color 0.2s, background 0.2s;"
+        <div class="drop-zone" id="drop-zone"
             ondragover="handleDragOver(event)"
-            ondragleave="handleDragLeave(event)"
+            ondragleave="handleDragLeave()"
             ondrop="handleDrop(event)"
             onclick="document.getElementById('file-input').click()">
-            <div style="font-size:2rem; margin-bottom:10px;">📂</div>
+            <div class="drop-icon">📂</div>
             <div>Drop a CSV or JSON file here</div>
-            <div style="font-size:0.8rem; margin-top:5px;">or click to browse</div>
-            <div style="font-size:0.75rem; margin-top:5px; color:#444;">Supports large files (GB+)</div>
+            <div class="drop-hint">or click to browse · supports large files (GB+)</div>
             <input type="file" id="file-input" accept=".csv,.json"
                 style="display:none;" onchange="handleFileSelect(event)">
         </div>
-        <div id="upload-progress" style="display:none; margin-bottom:10px;">
-            <div style="color:#888; font-size:0.85rem; margin-bottom:6px;">Uploading...</div>
-            <div style="background:#0f0f0f; border-radius:4px; height:6px;">
-                <div id="progress-bar" style="background:#6b0f1a; height:6px; border-radius:4px; width:0%; transition:width 0.3s;"></div>
+        <div class="upload-progress" id="upload-progress">
+            <div class="progress-label">Uploading…</div>
+            <div class="progress-track">
+                <div class="progress-fill" id="progress-bar"></div>
             </div>
         </div>
-        <button class="btn-save" onclick="submitUpload()" id="upload-btn">Upload Dataset</button>
+        <button class="btn-save" id="upload-btn" onclick="submitUpload()"
+            style="background:var(--color-sage);">Upload Dataset</button>
     </div>
 </div>
 
@@ -657,19 +950,45 @@
     let selectedFile = null;
     let currentNoteId = null;
 
+    function escapeHtml(str) {
+        return String(str)
+            .replace(/&/g, '&amp;')
+            .replace(/</g, '&lt;')
+            .replace(/>/g, '&gt;')
+            .replace(/"/g, '&quot;');
+    }
+
+    function stripMarkdown(text) {
+        return text
+            .replace(/#{1,6}\s+/g, '')
+            .replace(/\*\*(.+?)\*\*/g, '$1')
+            .replace(/\*(.+?)\*/g, '$1')
+            .replace(/`{1,3}[^`]*`{1,3}/g, '')
+            .replace(/\[(.+?)\]\(.+?\)/g, '$1')
+            .replace(/^[-*+]\s+/gm, '')
+            .replace(/^\d+\.\s+/gm, '')
+            .replace(/^>\s*/gm, '')
+            .replace(/\n+/g, ' ')
+            .replace(/\s[-*+]\s/g, ' ')
+            .trim();
+    }
+
+    function formatDate(dateStr) {
+        if (!dateStr) return '';
+        try {
+            return new Date(dateStr).toLocaleDateString('en-GB', { day: 'numeric', month: 'short' });
+        } catch { return dateStr.substring(0, 10); }
+    }
+
     function parseNote(filename, rawContent) {
         const lines = rawContent.split('\n');
         const meta = { filename, title: filename, created: '', modified: '', tags: [], body: '' };
-
         if (lines[0].trim() !== '---') { meta.body = rawContent; return meta; }
-
         let yamlEnd = -1;
         for (let i = 1; i < lines.length; i++) {
             if (lines[i].trim() === '---') { yamlEnd = i; break; }
         }
-
         if (yamlEnd === -1) { meta.body = rawContent; return meta; }
-
         for (let i = 1; i < yamlEnd; i++) {
             const line = lines[i];
             const colonIdx = line.indexOf(':');
@@ -683,27 +1002,20 @@
                 meta.tags = value.replace(/[\[\]]/g, '').split(',').map(t => t.trim()).filter(Boolean);
             }
         }
-
         meta.body = lines.slice(yamlEnd + 1).join('\n').trim();
         return meta;
     }
 
     function showView(view) {
-        if (view === 'notes') {
-            document.getElementById('notes-grid').style.display = 'grid';
-            document.getElementById('datasets-grid').style.display = 'none';
-            document.getElementById('btn-new-note').style.display = 'block';
-            document.getElementById('btn-upload-dataset').style.display = 'none';
-            document.getElementById('search-input').style.display = 'block';
-            loadNotes();
-        } else {
-            document.getElementById('notes-grid').style.display = 'none';
-            document.getElementById('datasets-grid').style.display = 'block';
-            document.getElementById('btn-new-note').style.display = 'none';
-            document.getElementById('btn-upload-dataset').style.display = 'block';
-            document.getElementById('search-input').style.display = 'none';
-            loadDatasets();
-        }
+        const isNotes = view === 'notes';
+        document.getElementById('notes-grid').style.display = isNotes ? 'flex' : 'none';
+        document.getElementById('datasets-grid').style.display = isNotes ? 'none' : 'block';
+        document.getElementById('btn-new-note').style.display = isNotes ? '' : 'none';
+        document.getElementById('btn-upload-dataset').style.display = isNotes ? 'none' : '';
+        document.getElementById('search-row').style.display = isNotes ? '' : 'none';
+        document.getElementById('nav-notes').classList.toggle('active', isNotes);
+        document.getElementById('nav-datasets').classList.toggle('active', !isNotes);
+        if (isNotes) loadNotes(); else loadDatasets();
     }
 
     async function loadNotes() {
@@ -713,125 +1025,120 @@
             allNotes = data.map(n => parseNote(n.filename, n.content));
             updateStats();
             renderNotes(allNotes);
-        } catch (err) {
+        } catch {
             document.getElementById('notes-grid').innerHTML =
                 '<div class="empty">Could not connect to notes server.</div>';
         }
     }
 
     function updateStats() {
-        document.getElementById('total-notes').textContent = allNotes.length;
         const allTags = new Set(allNotes.flatMap(n => n.tags));
-        document.getElementById('total-tags').textContent = allTags.size;
+        const n = allNotes.length, t = allTags.size;
+        document.getElementById('header-stats').textContent =
+            `${n} note${n !== 1 ? 's' : ''} · ${t} tag${t !== 1 ? 's' : ''}`;
     }
 
     async function renderNotes(notes) {
         const grid = document.getElementById('notes-grid');
         if (notes.length === 0) {
-            grid.innerHTML = '<div class="empty">No notes found.</div>';
+            grid.innerHTML = '<div class="empty">No notes found. Start one with + New Note.</div>';
             return;
         }
 
-        // Render cards first
         grid.innerHTML = notes.map((note, i) => `
-            <div class="note-card" id="card-${i}">
-                <div onclick="openModal(${i})">
-                    <div style="display:flex; justify-content:space-between; align-items:start;">
-                        <div class="note-title">${note.title}</div>
-                        <div id="media-badge-${i}" style="display:none;">
-                            <span style="
-                                background:#2a1010;
-                                color:#c9a84c;
-                                border:1px solid #3a1515;
-                                padding:2px 8px;
-                                border-radius:10px;
-                                font-size:0.7rem;
-                                white-space:nowrap;
-                            ">📎 <span id="media-count-${i}">0</span></span>
-                        </div>
-                    </div>
-                    <div class="note-meta">
-                        ${note.modified ? 'Modified ' + note.modified.substring(0, 10) : ''}
-                    </div>
-                    <div class="note-tags">
-                        ${note.tags.map(t => `<span class="tag">${t}</span>`).join('')}
-                    </div>
-                    ${note.body ? `<div class="note-preview">${note.body.substring(0, 120)}...</div>` : ''}
+            <div class="note-item" id="card-${i}">
+                <div class="note-item-top" onclick="openModal(${i})">
+                    <span class="note-title-text">${escapeHtml(note.title)}</span>
+                    <span class="media-badge" id="media-badge-${i}">📎 <span id="media-count-${i}">0</span></span>
                 </div>
+                <div class="note-meta-row" onclick="openModal(${i})">
+                    ${note.modified ? `<span class="note-date">${formatDate(note.modified)}</span>` : ''}
+                    ${note.tags.length && note.modified ? `<span class="meta-dot">·</span>` : ''}
+                    <div class="note-tags">
+                        ${note.tags.map(t => `<span class="tag">${escapeHtml(t)}</span>`).join('')}
+                    </div>
+                </div>
+                ${note.body ? `<div class="note-preview" onclick="openModal(${i})">${escapeHtml(stripMarkdown(note.body).substring(0, 130))}${stripMarkdown(note.body).length > 130 ? '…' : ''}</div>` : ''}
                 <div class="note-actions">
-                    <button class="btn-edit" onclick="openEditModal(${i})">✏️ Edit</button>
-                    <button class="btn-delete" onclick="confirmDelete(${i})">🗑️ Delete</button>
+                    <button class="btn-action edit" onclick="openEditModal(${i})">Edit</button>
+                    <button class="btn-action delete" onclick="confirmDelete(${i})">Delete</button>
                 </div>
             </div>
         `).join('');
 
-        // Load media counts in background
         notes.forEach((note, i) => {
             fetch(`/api/media/${note.filename}`)
                 .then(r => r.json())
                 .then(mediaList => {
                     if (mediaList.length > 0) {
-                        document.getElementById(`media-badge-${i}`).style.display = 'block';
+                        document.getElementById(`media-badge-${i}`).style.display = 'inline';
                         document.getElementById(`media-count-${i}`).textContent = mediaList.length;
                     }
-                })
-                .catch(() => {});
+                }).catch(() => {});
         });
     }
 
     function filterNotes() {
-        sortNotes();
         const keyword = document.getElementById('search-input').value.toLowerCase();
-        const filtered = allNotes.filter(n =>
-            n.title.toLowerCase().includes(keyword) ||
-            n.body.toLowerCase().includes(keyword) ||
-            n.tags.some(t => t.toLowerCase().includes(keyword))
-        );
+        const sort = document.getElementById('sort-select').value;
+        let filtered = keyword
+            ? allNotes.filter(n =>
+                n.title.toLowerCase().includes(keyword) ||
+                n.body.toLowerCase().includes(keyword) ||
+                n.tags.some(t => t.toLowerCase().includes(keyword)))
+            : [...allNotes];
+        applySort(filtered, sort);
         renderNotes(filtered);
     }
 
     function sortNotes() {
-        const sortBy = document.getElementById('sort-select').value;
         const keyword = document.getElementById('search-input').value.toLowerCase();
-
         let notes = keyword
             ? allNotes.filter(n =>
                 n.title.toLowerCase().includes(keyword) ||
                 n.body.toLowerCase().includes(keyword) ||
                 n.tags.some(t => t.toLowerCase().includes(keyword)))
             : [...allNotes];
-
-        notes.sort((a, b) => {
-            switch (sortBy) {
-                case 'modified-desc':
-                    return (b.modified || '').localeCompare(a.modified || '');
-                case 'modified-asc':
-                    return (a.modified || '').localeCompare(b.modified || '');
-                case 'title-asc':
-                    return a.title.localeCompare(b.title);
-                case 'title-desc':
-                    return b.title.localeCompare(a.title);
-                default:
-                    return 0;
-            }
-        });
-
+        applySort(notes, document.getElementById('sort-select').value);
         renderNotes(notes);
     }
 
-    // READ modal with media
+    function applySort(notes, sortBy) {
+        notes.sort((a, b) => {
+            switch (sortBy) {
+                case 'modified-desc': return (b.modified || '').localeCompare(a.modified || '');
+                case 'modified-asc':  return (a.modified || '').localeCompare(b.modified || '');
+                case 'title-asc':     return a.title.localeCompare(b.title);
+                case 'title-desc':    return b.title.localeCompare(a.title);
+                default: return 0;
+            }
+        });
+    }
+
+    /* ── Modal helpers ──────────────────────────────────────── */
+    function openOverlay(id) {
+        const el = document.getElementById(id);
+        el.classList.remove('closing');
+        el.classList.add('active');
+    }
+
+    function closeOverlay(id) {
+        const el = document.getElementById(id);
+        if (!el.classList.contains('active')) return;
+        el.classList.add('closing');
+        setTimeout(() => el.classList.remove('active', 'closing'), 240);
+    }
+
     async function openModal(index) {
         const note = allNotes[index];
         currentNoteId = note.filename;
-
         document.getElementById('modal-title').textContent = note.title;
         document.getElementById('modal-meta').textContent =
-            `Created: ${note.created || 'N/A'} | Modified: ${note.modified || 'N/A'}`;
-        // Render markdown instead of plain text
+            [note.created && `Created ${note.created.substring(0, 10)}`,
+             note.modified && `Modified ${note.modified.substring(0, 10)}`]
+            .filter(Boolean).join(' · ');
         document.getElementById('modal-content').innerHTML = marked.parse(note.body || '');
-        document.getElementById('modal-overlay').classList.add('active');
-
-        // Load media attachments
+        openOverlay('modal-overlay');
         loadMediaForNote(note.filename);
     }
 
@@ -839,71 +1146,39 @@
         try {
             const response = await fetch(`/api/media/${noteId}`);
             const mediaList = await response.json();
-
             const section = document.getElementById('modal-media-section');
             const gallery = document.getElementById('modal-media-gallery');
             section.style.display = 'block';
-
-            if (mediaList.length === 0) {
-                gallery.innerHTML = '';
-                return;
-            }
-
             gallery.innerHTML = mediaList.map(m => `
                 <div class="media-item">
                     ${m.type === 'image'
-                        ? `<img src="${m.url}" alt="${m.filename}"
-                            onclick="openLightbox('${m.url}')">`
-                        : `<video src="${m.url}" controls></video>`
-                    }
-                    <button class="media-delete"
-                        onclick="deleteMedia('${noteId}', '${m.filename}')">✕</button>
-                    <div class="media-name">${m.filename}</div>
+                        ? `<img src="${m.url}" alt="${escapeHtml(m.filename)}" onclick="openLightbox('${m.url}')">`
+                        : `<video src="${m.url}" controls></video>`}
+                    <button class="media-delete" onclick="deleteMedia('${noteId}','${m.filename}')">✕</button>
+                    <div class="media-name">${escapeHtml(m.filename)}</div>
                 </div>
             `).join('');
-        } catch (err) {
-            console.error('Could not load media:', err);
-        }
+        } catch {}
     }
 
     async function handleMediaUpload(event) {
         const file = event.target.files[0];
         if (!file || !currentNoteId) return;
-
         const formData = new FormData();
         formData.append('file', file);
-
         try {
-            const response = await fetch(`/api/media/${currentNoteId}`, {
-                method: 'POST',
-                body: formData
-            });
-
-            if (response.ok) {
-                loadMediaForNote(currentNoteId);
-            } else {
-                alert('Error uploading media.');
-            }
-        } catch (err) {
-            alert('Upload failed: ' + err.message);
-        }
-
-        // Reset input
+            const r = await fetch(`/api/media/${currentNoteId}`, { method: 'POST', body: formData });
+            if (r.ok) loadMediaForNote(currentNoteId);
+            else alert('Error uploading media.');
+        } catch (err) { alert('Upload failed: ' + err.message); }
         event.target.value = '';
     }
 
     async function deleteMedia(noteId, filename) {
         if (!confirm(`Delete "${filename}"?`)) return;
-
-        const response = await fetch(`/api/media/${noteId}/${filename}`, {
-            method: 'DELETE'
-        });
-
-        if (response.ok) {
-            loadMediaForNote(noteId);
-        } else {
-            alert('Error deleting media.');
-        }
+        const r = await fetch(`/api/media/${noteId}/${filename}`, { method: 'DELETE' });
+        if (r.ok) loadMediaForNote(noteId);
+        else alert('Error deleting media.');
     }
 
     function openLightbox(url) {
@@ -917,39 +1192,34 @@
 
     function closeModal(event) {
         if (!event || event.target === document.getElementById('modal-overlay')) {
-            document.getElementById('modal-overlay').classList.remove('active');
+            closeOverlay('modal-overlay');
             currentNoteId = null;
         }
     }
 
     function openCreateModal() {
-        document.getElementById('create-title').value = '';
-        document.getElementById('create-tags').value = '';
-        document.getElementById('create-content').value = '';
-        document.getElementById('create-modal-overlay').classList.add('active');
+        ['create-title', 'create-tags', 'create-content'].forEach(id =>
+            document.getElementById(id).value = '');
+        openOverlay('create-modal-overlay');
     }
 
     function closeCreateModal(event) {
-        if (!event || event.target === document.getElementById('create-modal-overlay')) {
-            document.getElementById('create-modal-overlay').classList.remove('active');
-        }
+        if (!event || event.target === document.getElementById('create-modal-overlay'))
+            closeOverlay('create-modal-overlay');
     }
 
     async function submitCreate() {
         const title = document.getElementById('create-title').value.trim();
-        const tags = document.getElementById('create-tags').value.trim();
+        const tags  = document.getElementById('create-tags').value.trim();
         const content = document.getElementById('create-content').value.trim();
-
         if (!title) { alert('Title cannot be empty!'); return; }
-
-        const response = await fetch('/api/notes', {
+        const r = await fetch('/api/notes', {
             method: 'POST',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ title, tags, content })
         });
-
-        if (response.ok) { closeCreateModal(); loadNotes(); }
-        else { alert('Error creating note.'); }
+        if (r.ok) { closeCreateModal(); loadNotes(); }
+        else alert('Error creating note.');
     }
 
     function openEditModal(index) {
@@ -958,81 +1228,70 @@
         document.getElementById('edit-title').value = note.title;
         document.getElementById('edit-tags').value = note.tags.join(', ');
         document.getElementById('edit-content').value = note.body;
-        document.getElementById('edit-modal-overlay').classList.add('active');
+        openOverlay('edit-modal-overlay');
     }
 
     function closeEditModal(event) {
-        if (!event || event.target === document.getElementById('edit-modal-overlay')) {
-            document.getElementById('edit-modal-overlay').classList.remove('active');
-        }
+        if (!event || event.target === document.getElementById('edit-modal-overlay'))
+            closeOverlay('edit-modal-overlay');
     }
 
     async function submitEdit() {
         const title = document.getElementById('edit-title').value.trim();
-        const tags = document.getElementById('edit-tags').value.trim();
+        const tags  = document.getElementById('edit-tags').value.trim();
         const content = document.getElementById('edit-content').value.trim();
-
-        const response = await fetch(`/api/notes/${editingFilename}`, {
+        const r = await fetch(`/api/notes/${editingFilename}`, {
             method: 'PUT',
             headers: { 'Content-Type': 'application/json' },
             body: JSON.stringify({ title, tags, content })
         });
-
-        if (response.ok) { closeEditModal(); loadNotes(); }
-        else { alert('Error updating note.'); }
+        if (r.ok) { closeEditModal(); loadNotes(); }
+        else alert('Error updating note.');
     }
 
     async function confirmDelete(index) {
         const note = allNotes[index];
         if (!confirm(`Delete "${note.title}"?`)) return;
-
-        const response = await fetch(`/api/notes/${note.filename}`, { method: 'DELETE' });
-        if (response.ok) { loadNotes(); }
-        else { alert('Error deleting note.'); }
+        const r = await fetch(`/api/notes/${note.filename}`, { method: 'DELETE' });
+        if (r.ok) loadNotes();
+        else alert('Error deleting note.');
     }
 
     async function loadDatasets() {
         const grid = document.getElementById('datasets-grid');
-        grid.innerHTML = '<div class="loading">Loading datasets...</div>';
-
+        grid.innerHTML = '<div class="loading">Loading…</div>';
         try {
             const response = await fetch('/api/datasets');
             const datasets = await response.json();
-
             if (datasets.length === 0) {
-                grid.innerHTML = '<div class="empty">No datasets yet. Upload one!</div>';
+                grid.innerHTML = '<div class="empty">No datasets yet. Upload one to get started.</div>';
                 return;
             }
-
-            grid.innerHTML = datasets.map(d => `
-                <div class="note-card" style="margin-bottom:12px;">
-                    <div class="note-title"
-                        onclick="window.location.href='/dataset.html?file=${d.filename}'">
-                        📄 ${d.filename}
+            grid.innerHTML = '<div class="dataset-list">' +
+                datasets.map(d => `
+                    <div class="dataset-item">
+                        <div class="dataset-name"
+                            onclick="window.location.href='/dataset.html?file=${encodeURIComponent(d.filename)}'"
+                        >${escapeHtml(d.filename)}</div>
+                        <div class="dataset-size">${(d.size / 1024).toFixed(1)} KB</div>
+                        <div class="dataset-actions">
+                            <button class="btn-view"
+                                onclick="window.location.href='/dataset.html?file=${encodeURIComponent(d.filename)}'">View</button>
+                            <button class="btn-action delete"
+                                onclick="confirmDeleteDataset('${escapeHtml(d.filename)}')">Delete</button>
+                        </div>
                     </div>
-                    <div class="note-meta">${Math.round(d.size / 1024 * 10) / 10} KB</div>
-                    <div class="note-actions" style="margin-top:10px;">
-                        <button class="btn-edit"
-                            onclick="window.location.href='/dataset.html?file=${d.filename}'">
-                            👁️ View
-                        </button>
-                        <button class="btn-delete"
-                            onclick="confirmDeleteDataset('${d.filename}')">
-                            🗑️ Delete
-                        </button>
-                    </div>
-                </div>
-            `).join('');
-        } catch (err) {
+                `).join('') + '</div>';
+        } catch {
             grid.innerHTML = '<div class="empty">Could not load datasets.</div>';
         }
     }
 
     async function confirmDeleteDataset(filename) {
         if (!confirm(`Delete dataset "${filename}"?`)) return;
-        const response = await fetch(`/api/datasets/${filename}`, { method: 'DELETE' });
-        if (response.ok) { loadDatasets(); }
-        else { alert('Error deleting dataset.'); }
+        const r = await fetch(`/api/datasets/${filename}`, { method: 'DELETE' });
+        if (r.ok) loadDatasets();
+        else alert('Error deleting dataset.');
     }
 
     function openUploadModal() {
@@ -1040,39 +1299,37 @@
         document.getElementById('upload-title').value = '';
         document.getElementById('upload-progress').style.display = 'none';
         document.getElementById('upload-btn').disabled = false;
+        resetDropZone();
+        openOverlay('upload-modal-overlay');
+    }
+
+    function resetDropZone() {
         document.getElementById('drop-zone').innerHTML = `
-            <div style="font-size:2rem; margin-bottom:10px;">📂</div>
+            <div class="drop-icon">📂</div>
             <div>Drop a CSV or JSON file here</div>
-            <div style="font-size:0.8rem; margin-top:5px;">or click to browse</div>
-            <div style="font-size:0.75rem; margin-top:5px; color:#444;">Supports large files (GB+)</div>
+            <div class="drop-hint">or click to browse · supports large files (GB+)</div>
             <input type="file" id="file-input" accept=".csv,.json"
                 style="display:none;" onchange="handleFileSelect(event)">
         `;
-        document.getElementById('upload-modal-overlay').classList.add('active');
     }
 
     function closeUploadModal(event) {
-        if (!event || event.target === document.getElementById('upload-modal-overlay')) {
-            document.getElementById('upload-modal-overlay').classList.remove('active');
-        }
+        if (!event || event.target === document.getElementById('upload-modal-overlay'))
+            closeOverlay('upload-modal-overlay');
     }
 
     function handleDragOver(event) {
         event.preventDefault();
-        const zone = document.getElementById('drop-zone');
-        zone.style.borderColor = '#6b0f1a';
-        zone.style.background = '#0f0505';
+        document.getElementById('drop-zone').classList.add('dragover');
     }
 
-    function handleDragLeave(event) {
-        const zone = document.getElementById('drop-zone');
-        zone.style.borderColor = '#2a1010';
-        zone.style.background = 'none';
+    function handleDragLeave() {
+        document.getElementById('drop-zone').classList.remove('dragover');
     }
 
     function handleDrop(event) {
         event.preventDefault();
-        handleDragLeave(event);
+        handleDragLeave();
         const file = event.dataTransfer.files[0];
         if (file) readFile(file);
     }
@@ -1087,138 +1344,113 @@
             alert('Only CSV and JSON files are supported.');
             return;
         }
-
         selectedFile = file;
-        const sizeMB = Math.round(file.size / 1024 / 1024 * 10) / 10;
-
+        const sizeMB = (file.size / 1024 / 1024).toFixed(1);
         document.getElementById('drop-zone').innerHTML = `
-            <div style="font-size:2rem; margin-bottom:10px;">✅</div>
-            <div style="color:#c9a84c;">${file.name}</div>
-            <div style="font-size:0.85rem; margin-top:5px; color:#666;">${sizeMB} MB — ready to upload</div>
+            <div class="drop-icon">✓</div>
+            <div style="color:var(--color-sage);">${escapeHtml(file.name)}</div>
+            <div class="drop-hint">${sizeMB} MB — ready to upload</div>
         `;
-
-        if (!document.getElementById('upload-title').value) {
+        if (!document.getElementById('upload-title').value)
             document.getElementById('upload-title').value = file.name.replace(/\.[^/.]+$/, '');
-        }
     }
 
     async function submitUpload() {
         if (!selectedFile) { alert('Please select a file first!'); return; }
-
         const title = document.getElementById('upload-title').value.trim();
         const btn = document.getElementById('upload-btn');
         const progress = document.getElementById('upload-progress');
         const bar = document.getElementById('progress-bar');
-
         btn.disabled = true;
         progress.style.display = 'block';
         bar.style.width = '10%';
-
         const formData = new FormData();
         formData.append('file', selectedFile);
         formData.append('title', title);
-
         try {
             bar.style.width = '40%';
-            const response = await fetch('/api/datasets/upload', {
-                method: 'POST',
-                body: formData
-            });
-
+            const response = await fetch('/api/datasets/upload', { method: 'POST', body: formData });
             bar.style.width = '90%';
             const data = await response.json();
-
             if (response.ok) {
                 bar.style.width = '100%';
                 setTimeout(() => {
                     closeUploadModal();
                     loadDatasets();
                     const rows = data.rowCount >= 0 ? `${data.rowCount} rows` : 'unknown rows';
-                    const size = Math.round(data.size / 1024 / 1024 * 10) / 10;
-                    alert(`✅ Uploaded!\n${rows} — ${size} MB`);
+                    alert(`Uploaded — ${rows}, ${(data.size / 1024 / 1024).toFixed(1)} MB`);
                 }, 300);
             } else {
                 progress.style.display = 'none';
                 btn.disabled = false;
-                alert('❌ Error: ' + (data.error || 'Upload failed'));
+                alert('Error: ' + (data.error || 'Upload failed'));
             }
         } catch (err) {
             progress.style.display = 'none';
             btn.disabled = false;
-            alert('❌ Upload failed: ' + err.message);
+            alert('Upload failed: ' + err.message);
         }
     }
 
     async function openStatsModal() {
-        document.getElementById('stats-modal-overlay').classList.add('active');
-        document.getElementById('stats-content').innerHTML =
-            '<div class="loading">Loading stats...</div>';
-
+        openOverlay('stats-modal-overlay');
+        document.getElementById('stats-content').innerHTML = '<div class="loading">Loading…</div>';
         try {
             const response = await fetch('/api/stats');
-            const stats = await response.json();
-
+            const s = await response.json();
             document.getElementById('stats-content').innerHTML = `
-                <div style="display:grid; grid-template-columns:1fr 1fr; gap:12px; margin-bottom:16px;">
-                    <div style="background:#0f0f0f; padding:18px; border-radius:8px; text-align:center; border:1px solid #2a1010;">
-                        <div style="font-size:2rem; font-weight:bold; color:#c9a84c;">${stats.totalNotes}</div>
-                        <div style="color:#666; font-size:0.82rem;">Total Notes</div>
+                <div class="stats-grid">
+                    <div class="stat-card">
+                        <div class="stat-value">${s.totalNotes}</div>
+                        <div class="stat-label">Notes</div>
                     </div>
-                    <div style="background:#0f0f0f; padding:18px; border-radius:8px; text-align:center; border:1px solid #2a1010;">
-                        <div style="font-size:2rem; font-weight:bold; color:#c9a84c;">${stats.totalTags}</div>
-                        <div style="color:#666; font-size:0.82rem;">Unique Tags</div>
+                    <div class="stat-card">
+                        <div class="stat-value">${s.totalTags}</div>
+                        <div class="stat-label">Unique tags</div>
                     </div>
-                    <div style="background:#0f0f0f; padding:18px; border-radius:8px; text-align:center; border:1px solid #2a1010;">
-                        <div style="font-size:2rem; font-weight:bold; color:#c9a84c;">${stats.totalWords}</div>
-                        <div style="color:#666; font-size:0.82rem;">Total Words</div>
+                    <div class="stat-card">
+                        <div class="stat-value">${s.totalWords}</div>
+                        <div class="stat-label">Total words</div>
                     </div>
-                    <div style="background:#0f0f0f; padding:18px; border-radius:8px; text-align:center; border:1px solid #2a1010;">
-                        <div style="font-size:2rem; font-weight:bold; color:#c9a84c;">${stats.avgWordsPerNote}</div>
-                        <div style="color:#666; font-size:0.82rem;">Avg Words/Note</div>
+                    <div class="stat-card">
+                        <div class="stat-value">${s.avgWordsPerNote}</div>
+                        <div class="stat-label">Avg words / note</div>
                     </div>
                 </div>
-                ${stats.topTags && stats.topTags.length > 0 ? `
-                    <div style="background:#0f0f0f; padding:18px; border-radius:8px; margin-bottom:12px; border:1px solid #2a1010;">
-                        <div style="color:#c9a84c; font-weight:600; margin-bottom:12px; font-size:0.9rem;">Top Tags</div>
-                        ${stats.topTags.map(t => `
-                            <div style="display:flex; justify-content:space-between; margin-bottom:8px; align-items:center;">
-                                <span class="tag">${t.tag}</span>
-                                <span style="color:#555; font-size:0.82rem;">${t.count} note${t.count > 1 ? 's' : ''}</span>
+                ${s.topTags && s.topTags.length ? `
+                    <div class="stats-section">
+                        <div class="stats-section-title">Top tags</div>
+                        ${s.topTags.map(t => `
+                            <div class="top-tag-row">
+                                <span class="tag">${escapeHtml(t.tag)}</span>
+                                <span style="font-size:var(--text-xs);color:var(--color-text-dim)">
+                                    ${t.count} note${t.count > 1 ? 's' : ''}
+                                </span>
                             </div>
                         `).join('')}
                     </div>
                 ` : ''}
-                <div style="background:#0f0f0f; padding:18px; border-radius:8px; border:1px solid #2a1010;">
-                    <div style="color:#c9a84c; font-weight:600; margin-bottom:10px; font-size:0.9rem;">Recent Activity</div>
-                    <div style="color:#555; font-size:0.82rem; margin-bottom:6px;">
-                        Newest: <span style="color:#bbb;">${stats.newestNote || 'N/A'}</span>
-                    </div>
-                    <div style="color:#555; font-size:0.82rem;">
-                        Oldest: <span style="color:#bbb;">${stats.oldestNote || 'N/A'}</span>
-                    </div>
+                <div class="stats-section">
+                    <div class="stats-section-title">Activity</div>
+                    <div class="activity-line">Newest: <span>${s.newestNote || 'N/A'}</span></div>
+                    <div class="activity-line">Oldest: <span>${s.oldestNote || 'N/A'}</span></div>
                 </div>
             `;
-        } catch (err) {
+        } catch {
             document.getElementById('stats-content').innerHTML =
                 '<div class="empty">Could not load stats.</div>';
         }
     }
 
     function closeStatsModal(event) {
-        if (!event || event.target === document.getElementById('stats-modal-overlay')) {
-            document.getElementById('stats-modal-overlay').classList.remove('active');
-        }
+        if (!event || event.target === document.getElementById('stats-modal-overlay'))
+            closeOverlay('stats-modal-overlay');
     }
 
     document.addEventListener('keydown', e => {
-        if (e.key === 'Escape') {
-            closeModal();
-            closeCreateModal();
-            closeEditModal();
-            closeStatsModal();
-            closeUploadModal();
-            closeLightbox();
-        }
+        if (e.key !== 'Escape') return;
+        closeModal(); closeCreateModal(); closeEditModal();
+        closeStatsModal(); closeUploadModal(); closeLightbox();
     });
 
     async function fetchCsrfToken() {

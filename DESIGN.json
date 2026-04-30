@@ -1,0 +1,149 @@
+{
+  "schemaVersion": 2,
+  "generatedAt": "2026-04-30T00:00:00.000Z",
+  "title": "Design System: JumzysNotes",
+  "extensions": {
+    "colorMeta": {
+      "bg":           { "role": "neutral",   "displayName": "Lamp-Lit Void",      "canonical": "oklch(11% 0.008 65)",  "tonalRamp": ["oklch(11% 0.008 65)","oklch(17% 0.012 62)","oklch(22% 0.014 60)","oklch(28% 0.016 60)","oklch(38% 0.012 64)","oklch(50% 0.008 68)","oklch(65% 0.007 70)","oklch(82% 0.007 72)"] },
+      "surface":      { "role": "neutral",   "displayName": "Dark Wood Surface",  "canonical": "oklch(17% 0.012 62)",  "tonalRamp": ["oklch(11% 0.008 65)","oklch(17% 0.012 62)","oklch(22% 0.014 60)","oklch(28% 0.016 60)","oklch(38% 0.012 64)","oklch(50% 0.008 68)","oklch(65% 0.007 70)","oklch(82% 0.007 72)"] },
+      "surface-2":    { "role": "neutral",   "displayName": "Warm Mid Surface",   "canonical": "oklch(22% 0.014 60)",  "tonalRamp": ["oklch(11% 0.008 65)","oklch(17% 0.012 62)","oklch(22% 0.014 60)","oklch(28% 0.016 60)","oklch(38% 0.012 64)","oklch(50% 0.008 68)","oklch(65% 0.007 70)","oklch(82% 0.007 72)"] },
+      "border":       { "role": "neutral",   "displayName": "Tonal Boundary",     "canonical": "oklch(28% 0.016 60)",  "tonalRamp": ["oklch(11% 0.008 65)","oklch(17% 0.012 62)","oklch(22% 0.014 60)","oklch(28% 0.016 60)","oklch(38% 0.012 64)","oklch(50% 0.008 68)","oklch(65% 0.007 70)","oklch(82% 0.007 72)"] },
+      "text-dim":     { "role": "neutral",   "displayName": "Lamp Shadow",        "canonical": "oklch(50% 0.008 68)",  "tonalRamp": ["oklch(11% 0.008 65)","oklch(17% 0.012 62)","oklch(22% 0.014 60)","oklch(28% 0.016 60)","oklch(50% 0.008 68)","oklch(65% 0.007 70)","oklch(82% 0.007 72)","oklch(93% 0.005 72)"] },
+      "text-body":    { "role": "neutral",   "displayName": "Warm Body Text",     "canonical": "oklch(82% 0.007 72)",  "tonalRamp": ["oklch(11% 0.008 65)","oklch(22% 0.014 60)","oklch(38% 0.012 64)","oklch(50% 0.008 68)","oklch(65% 0.007 70)","oklch(75% 0.007 71)","oklch(82% 0.007 72)","oklch(93% 0.005 72)"] },
+      "text-display": { "role": "neutral",   "displayName": "Near-White Display", "canonical": "oklch(93% 0.005 72)",  "tonalRamp": ["oklch(11% 0.008 65)","oklch(22% 0.014 60)","oklch(38% 0.012 64)","oklch(50% 0.008 68)","oklch(65% 0.007 70)","oklch(75% 0.007 71)","oklch(82% 0.007 72)","oklch(93% 0.005 72)"] },
+      "amber":        { "role": "primary",   "displayName": "Honey Gold",         "canonical": "oklch(75% 0.13 75)",   "tonalRamp": ["oklch(18% 0.02 75)","oklch(28% 0.05 75)","oklch(38% 0.08 75)","oklch(48% 0.10 75)","oklch(58% 0.12 75)","oklch(67% 0.13 75)","oklch(75% 0.13 75)","oklch(88% 0.08 75)"] },
+      "amber-dim":    { "role": "primary",   "displayName": "Dim Amber",          "canonical": "oklch(60% 0.10 75)",   "tonalRamp": ["oklch(18% 0.02 75)","oklch(28% 0.05 75)","oklch(38% 0.08 75)","oklch(48% 0.10 75)","oklch(60% 0.10 75)","oklch(67% 0.13 75)","oklch(75% 0.13 75)","oklch(88% 0.08 75)"] },
+      "mauve":        { "role": "secondary", "displayName": "Dusty Rose",         "canonical": "oklch(62% 0.09 350)",  "tonalRamp": ["oklch(16% 0.02 350)","oklch(22% 0.05 350)","oklch(30% 0.07 350)","oklch(40% 0.08 350)","oklch(50% 0.09 350)","oklch(62% 0.09 350)","oklch(74% 0.07 350)","oklch(88% 0.04 350)"] },
+      "mauve-bg":     { "role": "secondary", "displayName": "Mauve Surface",      "canonical": "oklch(22% 0.05 350)",  "tonalRamp": ["oklch(16% 0.02 350)","oklch(22% 0.05 350)","oklch(30% 0.07 350)","oklch(40% 0.08 350)","oklch(50% 0.09 350)","oklch(62% 0.09 350)","oklch(74% 0.07 350)","oklch(88% 0.04 350)"] },
+      "mauve-border": { "role": "secondary", "displayName": "Mauve Edge",         "canonical": "oklch(30% 0.07 350)",  "tonalRamp": ["oklch(16% 0.02 350)","oklch(22% 0.05 350)","oklch(30% 0.07 350)","oklch(40% 0.08 350)","oklch(50% 0.09 350)","oklch(62% 0.09 350)","oklch(74% 0.07 350)","oklch(88% 0.04 350)"] },
+      "sage":         { "role": "tertiary",  "displayName": "Stone Green",        "canonical": "oklch(58% 0.06 150)",  "tonalRamp": ["oklch(15% 0.01 150)","oklch(17% 0.03 150)","oklch(26% 0.05 150)","oklch(35% 0.055 150)","oklch(45% 0.06 150)","oklch(58% 0.06 150)","oklch(72% 0.05 150)","oklch(87% 0.03 150)"] },
+      "sage-bg":      { "role": "tertiary",  "displayName": "Sage Surface",       "canonical": "oklch(17% 0.03 150)",  "tonalRamp": ["oklch(15% 0.01 150)","oklch(17% 0.03 150)","oklch(26% 0.05 150)","oklch(35% 0.055 150)","oklch(45% 0.06 150)","oklch(58% 0.06 150)","oklch(72% 0.05 150)","oklch(87% 0.03 150)"] },
+      "sage-border":  { "role": "tertiary",  "displayName": "Sage Edge",          "canonical": "oklch(26% 0.05 150)",  "tonalRamp": ["oklch(15% 0.01 150)","oklch(17% 0.03 150)","oklch(26% 0.05 150)","oklch(35% 0.055 150)","oklch(45% 0.06 150)","oklch(58% 0.06 150)","oklch(72% 0.05 150)","oklch(87% 0.03 150)"] }
+    },
+    "typographyMeta": {
+      "display":  { "displayName": "Display",  "purpose": "App name in the header. Georgia amber — the identity voice of JumzysNotes." },
+      "headline": { "displayName": "Headline", "purpose": "Modal headings (h2) and markdown H1/H2 inside note content." },
+      "title":    { "displayName": "Title",    "purpose": "Note item titles in the list. The workhorse — what the eye lands on first." },
+      "body":     { "displayName": "Body",     "purpose": "Note previews, modal content, descriptions. Generous 1.72 line-height for reading." },
+      "label":    { "displayName": "Label",    "purpose": "Tags, timestamps, metadata, action buttons, table column headers." }
+    },
+    "shadows": [
+      { "name": "modal-backdrop", "value": "background: oklch(0% 0 0 / 0.72)",   "purpose": "Full-screen overlay behind open modals. Implemented as a background color, not box-shadow." },
+      { "name": "focus-ring",     "value": "0 0 0 2px oklch(75% 0.13 75 / 0.15)", "purpose": "Amber glow on focused inputs and textareas. State indicator, not elevation." }
+    ],
+    "motion": [
+      { "name": "ease-out",   "value": "cubic-bezier(0.25, 1, 0.5, 1)",  "purpose": "Default easing for state transitions: hover, focus, reveal." },
+      { "name": "ease-in",    "value": "cubic-bezier(0.5, 0, 0.75, 0)",  "purpose": "Exit easing for modal close — slightly faster, lighter feel." },
+      { "name": "dur-fast",   "value": "150ms",                           "purpose": "Hover, focus, and opacity transitions. Fast enough to feel immediate." },
+      { "name": "dur-base",   "value": "220ms",                           "purpose": "Background color shifts, general state transitions." },
+      { "name": "dur-modal",  "value": "300ms",                           "purpose": "Modal enter. Exit uses 230ms ease-in for asymmetric feel." }
+    ],
+    "breakpoints": [
+      { "name": "sm", "value": "640px", "purpose": "Mobile breakpoint — header stats hide, padding reduces, brand name scales down." }
+    ]
+  },
+  "components": [
+    {
+      "name": "Primary Button",
+      "kind": "button",
+      "refersTo": "btn-primary",
+      "description": "Amber-fill action button. Used for New Note, Upload, and other primary actions in the header.",
+      "html": "<button class=\"ds-btn-primary\">+ New Note</button>",
+      "css": ".ds-btn-primary { background: oklch(75% 0.13 75); border: none; color: oklch(11% 0.008 65); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; font-size: 0.82rem; font-weight: 600; padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: opacity 150ms cubic-bezier(0.25, 1, 0.5, 1); } .ds-btn-primary:hover { opacity: 0.85; } .ds-btn-primary:focus-visible { outline: none; box-shadow: 0 0 0 2px oklch(75% 0.13 75 / 0.15); }"
+    },
+    {
+      "name": "Ghost Button",
+      "kind": "button",
+      "refersTo": "btn-ghost",
+      "description": "Border-only secondary button. Used for Stats, Logout, and dataset View actions.",
+      "html": "<button class=\"ds-btn-ghost\">Stats</button>",
+      "css": ".ds-btn-ghost { background: none; border: 1px solid oklch(28% 0.016 60); color: oklch(50% 0.008 68); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; font-size: 0.82rem; padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: border-color 150ms cubic-bezier(0.25, 1, 0.5, 1), color 150ms cubic-bezier(0.25, 1, 0.5, 1); } .ds-btn-ghost:hover { border-color: oklch(50% 0.008 68); color: oklch(82% 0.007 72); } .ds-btn-ghost:focus-visible { outline: none; box-shadow: 0 0 0 2px oklch(75% 0.13 75 / 0.15); }"
+    },
+    {
+      "name": "Save Button",
+      "kind": "button",
+      "refersTo": "btn-save",
+      "description": "Full-width amber submit button used inside create/edit modals.",
+      "html": "<button class=\"ds-btn-save\">Save Note</button>",
+      "css": ".ds-btn-save { width: 100%; background: oklch(75% 0.13 75); border: none; color: oklch(11% 0.008 65); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; font-size: 0.82rem; font-weight: 600; padding: 12px 16px; border-radius: 8px; cursor: pointer; transition: opacity 150ms cubic-bezier(0.25, 1, 0.5, 1); } .ds-btn-save:hover { opacity: 0.85; } .ds-btn-save:disabled { opacity: 0.4; cursor: not-allowed; } .ds-btn-save:focus-visible { outline: none; box-shadow: 0 0 0 2px oklch(75% 0.13 75 / 0.15); }"
+    },
+    {
+      "name": "Tag Chip",
+      "kind": "chip",
+      "refersTo": "tag",
+      "description": "Dusty-mauve pill chip for note tags. Display only — no click state.",
+      "html": "<span class=\"ds-tag\">productivity</span>",
+      "css": ".ds-tag { display: inline-block; background: oklch(22% 0.05 350); color: oklch(62% 0.09 350); border: 1px solid oklch(30% 0.07 350); padding: 1px 8px; border-radius: 99px; font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; font-size: 0.72rem; white-space: nowrap; }"
+    },
+    {
+      "name": "Note List Item",
+      "kind": "card",
+      "refersTo": "note-item",
+      "description": "Bear-style flat list row. Title, date+tags meta row, preview text. Actions reveal on hover.",
+      "html": "<div class=\"ds-note-item\"><div class=\"ds-note-top\"><span class=\"ds-note-title\">Future Project Ideas</span></div><div class=\"ds-note-meta\"><span class=\"ds-note-date\">Apr 29</span><span class=\"ds-meta-dot\">·</span><span class=\"ds-tag\">ideas</span><span class=\"ds-tag\">projects</span></div><p class=\"ds-note-preview\">Smart Home Dashboard Central control interface for IoT devices…</p></div>",
+      "css": ".ds-note-item { padding: 16px 12px; border-bottom: 1px solid oklch(28% 0.016 60); border-radius: 8px; transition: background 150ms cubic-bezier(0.25, 1, 0.5, 1); cursor: pointer; } .ds-note-item:first-child { border-top: 1px solid oklch(28% 0.016 60); } .ds-note-item:hover { background: oklch(17% 0.012 62); } .ds-note-top { display: flex; justify-content: space-between; align-items: flex-start; gap: 12px; } .ds-note-title { font-family: Georgia, 'Times New Roman', serif; font-size: 1rem; font-weight: 700; color: oklch(93% 0.005 72); transition: color 150ms cubic-bezier(0.25, 1, 0.5, 1); line-height: 1.3; } .ds-note-item:hover .ds-note-title { color: oklch(75% 0.13 75); } .ds-note-meta { display: flex; align-items: center; flex-wrap: wrap; gap: 8px; margin-top: 4px; } .ds-note-date { font-size: 0.72rem; color: oklch(50% 0.008 68); } .ds-meta-dot { font-size: 0.72rem; color: oklch(28% 0.016 60); } .ds-tag { display: inline-block; background: oklch(22% 0.05 350); color: oklch(62% 0.09 350); border: 1px solid oklch(30% 0.07 350); padding: 1px 8px; border-radius: 99px; font-size: 0.72rem; } .ds-note-preview { font-size: 0.82rem; color: oklch(50% 0.008 68); line-height: 1.55; margin-top: 8px; }"
+    },
+    {
+      "name": "Text Input",
+      "kind": "input",
+      "refersTo": "input",
+      "description": "Recessed input field used in search and modal forms. Amber focus glow.",
+      "html": "<input class=\"ds-input\" type=\"text\" placeholder=\"Search notes…\" />",
+      "css": ".ds-input { width: 100%; background: oklch(11% 0.008 65); border: 1px solid oklch(28% 0.016 60); border-radius: 8px; color: oklch(82% 0.007 72); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; font-size: 0.9rem; padding: 12px 16px; outline: none; transition: border-color 150ms cubic-bezier(0.25, 1, 0.5, 1), box-shadow 150ms cubic-bezier(0.25, 1, 0.5, 1); } .ds-input::placeholder { color: oklch(50% 0.008 68); } .ds-input:focus { border-color: oklch(75% 0.13 75); box-shadow: 0 0 0 2px oklch(75% 0.13 75 / 0.15); }"
+    },
+    {
+      "name": "Modal",
+      "kind": "custom",
+      "refersTo": "modal",
+      "description": "Centered content modal with animated enter/exit. Used for read note, create, edit, stats, upload.",
+      "html": "<div class=\"ds-modal-overlay\"><div class=\"ds-modal\"><button class=\"ds-close-btn\">✕</button><h2>Note Title</h2><p class=\"ds-modal-meta\">Modified Apr 29 · 3 tags</p><div class=\"ds-modal-body\"><p>Note content goes here…</p></div></div></div>",
+      "css": ".ds-modal-overlay { position: fixed; inset: 0; background: oklch(0% 0 0 / 0.72); display: flex; justify-content: center; align-items: center; padding: 24px; animation: ds-backdrop-in 300ms cubic-bezier(0.25, 1, 0.5, 1); } @keyframes ds-backdrop-in { from { opacity: 0; } to { opacity: 1; } } .ds-modal { background: oklch(22% 0.014 60); border: 1px solid oklch(28% 0.016 60); border-radius: 12px; padding: 32px; max-width: 700px; width: 100%; max-height: 88vh; overflow-y: auto; position: relative; animation: ds-modal-in 300ms cubic-bezier(0.25, 1, 0.5, 1); } @keyframes ds-modal-in { from { opacity: 0; transform: translateY(12px); } to { opacity: 1; transform: translateY(0); } } .ds-modal h2 { font-family: Georgia, 'Times New Roman', serif; font-size: 1.3rem; color: oklch(93% 0.005 72); font-weight: 400; margin-bottom: 8px; padding-right: 32px; } .ds-modal-meta { font-size: 0.82rem; color: oklch(50% 0.008 68); margin-bottom: 24px; } .ds-modal-body { font-size: 0.9rem; color: oklch(82% 0.007 72); line-height: 1.72; } .ds-close-btn { position: absolute; top: 16px; right: 16px; background: none; border: none; color: oklch(50% 0.008 68); font-size: 1.1rem; cursor: pointer; width: 30px; height: 30px; display: flex; align-items: center; justify-content: center; border-radius: 8px; transition: color 150ms, background 150ms; } .ds-close-btn:hover { color: oklch(82% 0.007 72); background: oklch(28% 0.016 60); }"
+    },
+    {
+      "name": "Nav Toggle",
+      "kind": "nav",
+      "refersTo": "btn-nav",
+      "description": "Text-only view switcher for Notes / Datasets. Active state: amber text.",
+      "html": "<nav class=\"ds-nav\"><button class=\"ds-btn-nav ds-active\">Notes</button><button class=\"ds-btn-nav\">Datasets</button></nav>",
+      "css": ".ds-nav { display: flex; gap: 2px; } .ds-btn-nav { background: none; border: none; color: oklch(50% 0.008 68); font-family: -apple-system, BlinkMacSystemFont, 'Segoe UI', system-ui, sans-serif; font-size: 0.82rem; padding: 8px 12px; border-radius: 8px; cursor: pointer; transition: color 150ms cubic-bezier(0.25, 1, 0.5, 1), background 150ms cubic-bezier(0.25, 1, 0.5, 1); } .ds-btn-nav:hover { color: oklch(82% 0.007 72); background: oklch(22% 0.014 60); } .ds-btn-nav.ds-active { color: oklch(75% 0.13 75); }"
+    }
+  ],
+  "narrative": {
+    "northStar": "The Inhabited Study",
+    "overview": "JumzysNotes looks like a room that belongs to someone. Not installed software, not a SaaS product — a place. The visual language draws from a personal study at night: warm amber lamplight on dark wood, ink on aged paper, a desk that is chaotic to outsiders but perfectly legible to the person who built it. Every surface is tinted warm brown rather than gray, as if the screens were lit by a lamp rather than a fluorescent tube.\n\nThe palette is a full, disciplined four-role system. Warm amber is the primary voice — rare, deliberate, used only when something truly matters. Dusty mauve anchors tags with a quiet secondary warmth. Muted sage acts as a mode signal: when the user enters the dataset view, the accent color shifts to sage. Warm dark neutrals carry everything else, never reaching pure black.\n\nTypography pairs Georgia serif with the system humanist sans. The pairing evokes a journal with footnotes — the serif draws the eye to note titles, the sans keeps navigation frictionless. Motion is responsive: every state change earns a transition, nothing moves for decoration.",
+    "keyCharacteristics": [
+      "Full-palette warm dark mode — four deliberate color roles, no accidents",
+      "Georgia serif for display + note titles; system-ui sans for all UI chrome",
+      "Flat tonal surfaces — depth through three background steps, not drop shadows",
+      "Responsive motion — transitions on state, nothing choreographed",
+      "Bear-style list layout for notes — border-bottom dividers, no card grid"
+    ],
+    "rules": [
+      { "name": "The Full Palette Rule",  "body": "Four color roles exist and each has exactly one job. Amber = interactive/attention. Mauve = tags/relational. Sage = dataset context only. Neutrals = everything else. Never press a role into double duty.", "section": "colors" },
+      { "name": "The Warm Dark Rule",     "body": "No surface may be neutral-gray or pure black. Every background and panel is tinted toward warm brown (hue 55–80, chroma 0.008–0.016 in OKLCH). The warmth is subtle but its absence makes the UI feel cold and corporate.", "section": "colors" },
+      { "name": "The No-Monospace Rule",  "body": "Monospace is a content voice, not a UI voice. SF Mono / Fira Code appear only inside code blocks within markdown notes. Never for nav, buttons, labels, metadata, or form fields.", "section": "typography" },
+      { "name": "The Tonal Depth Rule",   "body": "If you reach for a shadow before trying a background step, you've reached too soon. Three distinct surface levels exist (bg, surface, surface-2). Use them before adding shadow. The only valid shadow in this system is the modal overlay backdrop.", "section": "elevation" }
+    ],
+    "dos": [
+      "Do keep every surface tinted warm — even 'neutral' backgrounds must carry a warm brown cast (hue 55–80, chroma ≥0.008 in OKLCH).",
+      "Do use Georgia only for note titles, modal headings, and content headings rendered from markdown.",
+      "Do let amber be rare — app name, save button, active nav, and hover title state only.",
+      "Do use tonal stepping (bg → surface → surface-2) to create depth before reaching for box-shadow.",
+      "Do keep tag chips in mauve and dataset accents in sage — the color shift is intentional mode signaling.",
+      "Do cap body text at 65ch in reading contexts (modal content, markdown paragraphs).",
+      "Do animate modals with asymmetric in/out duration: 300ms enter, 230ms exit.",
+      "Do hide note row actions at rest and reveal on hover with opacity transition."
+    ],
+    "donts": [
+      "Don't use the hero-metric template — big numbers with small labels in a 2×2 grid of identical stat cards.",
+      "Don't build a card grid for notes — the list is a flat Bear-style divider list.",
+      "Don't add panel sprawl: no persistent left sidebar, no nested navigation drawers, no secondary toolbar.",
+      "Don't use border-left as a colored accent stripe on note items or list rows.",
+      "Don't apply gradient text (background-clip: text with a gradient).",
+      "Don't use glassmorphism or backdrop-filter: blur() decoratively.",
+      "Don't use monospace outside of code blocks inside note content.",
+      "Don't use pure black (oklch(0%)) or pure white (oklch(100%)).",
+      "Don't put sage anywhere in the notes view, or amber anywhere in the dataset table view."
+    ]
+  }
+}

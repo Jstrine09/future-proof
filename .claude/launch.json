@@ -1,0 +1,11 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "jumzys-notes",
+      "runtimeExecutable": "/Users/james/Projects/future-proof/jumzys-notes-api/mvnw",
+      "runtimeArgs": ["-f", "/Users/james/Projects/future-proof/jumzys-notes-api/pom.xml", "spring-boot:run"],
+      "port": 8080
+    }
+  ]
+}
